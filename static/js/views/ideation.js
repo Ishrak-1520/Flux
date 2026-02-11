@@ -20,98 +20,124 @@ export default {
         }
 
         container.innerHTML = `
-            <div class="max-w-4xl mx-auto">
+            <div class="max-w-5xl mx-auto px-4 py-8">
                 <!-- Navigation -->
-                <div class="mb-8 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                    <a href="#/dashboard" class="hover:text-flux-500 transition-colors"><i class="ri-arrow-left-line mr-1"></i> Back to Vault</a>
-                    <span class="mx-2">/</span>
-                    <span class="text-gray-900 dark:text-white font-medium truncate">${project.title}</span>
-                </div>
+                <nav class="mb-12 flex items-center text-sm font-mono text-gray-500">
+                    <a href="#/dashboard" class="hover:text-cyan-400 transition-colors flex items-center gap-1 group">
+                        <i class="ri-arrow-left-line group-hover:-translate-x-1 transition-transform"></i>
+                        BACK_TO_VAULT
+                    </a>
+                    <span class="mx-3 text-gray-700">/</span>
+                    <span class="text-gray-300 truncate max-w-xs">${project.title}</span>
+                </nav>
 
-                <!-- Main Content -->
-                <div class="text-center mb-10">
-                    <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-flux-400 to-purple-500 mb-4 animate-float">
-                        What are we building today?
+                <!-- Header -->
+                <div class="text-center mb-16 relative">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-flux-500/10 rounded-full blur-3xl -z-10"></div>
+                    <h1 class="text-5xl md:text-6xl font-black text-white mb-6 tracking-tight">
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-200 to-flux-400">
+                            Manifest Your Vision
+                        </span>
                     </h1>
-                    <p class="text-xl text-gray-600 dark:text-gray-300">
-                        Describe your vision or pick a category to get started.
+                    <p class="text-xl text-gray-400 max-w-2xl mx-auto font-light">
+                        Architect the future. Describe your objective or allow the system to guide your parameters.
                     </p>
                 </div>
 
                 <!-- Tabs -->
-                <div class="glass p-1 rounded-xl flex mb-8 max-w-md mx-auto relative z-10">
-                    <button class="tab-btn w-1/2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 bg-white dark:bg-gray-700 shadow-sm text-flux-600 dark:text-white" data-tab="freestyle">
-                        <i class="ri-edit-line mr-2"></i>Freestyle
-                    </button>
-                    <button class="tab-btn w-1/2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 text-gray-500 hover:text-gray-700 dark:hover:text-gray-200" data-tab="guided">
-                        <i class="ri-list-check-2 mr-2"></i>Guided
-                    </button>
+                <div class="flex justify-center mb-10">
+                    <div class="glass-panel p-1.5 rounded-2xl flex relative z-10 w-full max-w-md bg-black/40 border-white/5">
+                        <button class="tab-btn w-1/2 py-3 rounded-xl text-sm font-bold transition-all duration-300 bg-white/10 text-white shadow-lg shadow-white/5" data-tab="freestyle">
+                            <i class="ri-edit-line mr-2"></i>FREESTYLE
+                        </button>
+                        <button class="tab-btn w-1/2 py-3 rounded-xl text-sm font-bold transition-all duration-300 text-gray-500 hover:text-white" data-tab="guided">
+                            <i class="ri-list-check-2 mr-2"></i>GUIDED
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Form Container -->
-                <div class="glass p-8 rounded-2xl shadow-xl relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-br from-flux-500/5 to-purple-500/5 z-0"></div>
-                    
-                    <form id="ideation-form" class="relative z-10">
-                        <!-- Freestyle View -->
-                        <div id="tab-freestyle" class="tab-content transition-opacity duration-300">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Describe your idea in detail
-                            </label>
-                            <textarea 
-                                name="prompt" 
-                                class="w-full h-48 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50 focus:ring-2 focus:ring-flux-500 focus:border-transparent outline-none resize-none text-gray-900 dark:text-gray-100 placeholder-gray-400 transition-all font-mono text-sm leading-relaxed"
-                                placeholder="I want to build a decentralized marketplace for..."
-                            >${project.original_prompt || ''}</textarea>
-                            <p class="mt-2 text-xs text-right text-gray-400">
-                                <span id="char-count">0</span> chars
-                            </p>
-                        </div>
-
-                        <!-- Guided View -->
-                        <div id="tab-guided" class="tab-content hidden transition-opacity duration-300 space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
-                                    <select name="category" class="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50 focus:ring-2 focus:ring-flux-500 outline-none text-gray-900 dark:text-gray-100">
-                                        <option value="">Select a domain...</option>
-                                        <option value="SWE">Software Engineering Tools</option>
-                                        <option value="FinTech">FinTech & DeFi</option>
-                                        <option value="HealthTech">HealthTech & BioTech</option>
-                                        <option value="EdTech">EdTech & Learning</option>
-                                        <option value="CyberSec">CyberSecurity</option>
-                                        <option value="Social">Social & Community</option>
-                                        <option value="Marketplace">E-commerce & Marketplaces</option>
-                                        <option value="IoT">IoT & Hardware</option>
-                                    </select>
+                <div class="relative">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-violet-600/20 to-cyan-500/20 rounded-3xl blur opacity-50"></div>
+                    <div class="glass-panel p-8 md:p-12 rounded-3xl relative overflow-hidden bg-slate-950/80">
+                        
+                        <form id="ideation-form" class="relative z-10 max-w-3xl mx-auto">
+                            <!-- Freestyle View -->
+                            <div id="tab-freestyle" class="tab-content transition-all duration-500">
+                                <label class="block text-xs font-mono text-cyan-400 mb-3 uppercase tracking-widest">
+                                    // Project_Directive
+                                </label>
+                                <div class="relative group">
+                                    <div class="absolute -inset-0.5 bg-gradient-to-r from-flux-500 to-cyan-500 rounded-2xl opacity-0 group-focus-within:opacity-50 transition duration-500 blur"></div>
+                                    <textarea 
+                                        name="prompt" 
+                                        class="relative w-full h-64 p-6 rounded-2xl bg-slate-900 border border-white/10 text-gray-100 placeholder-gray-600 focus:outline-none focus:ring-0 resize-none font-mono text-sm leading-relaxed transition-all shadow-inner"
+                                        placeholder="> Initiate system prompt...&#10;> Describe the application architecture, target user base, and core functionality..."
+                                    >${project.original_prompt || ''}</textarea>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subdomain (Optional)</label>
-                                    <input type="text" name="subdomain" class="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50 focus:ring-2 focus:ring-flux-500 outline-none text-gray-900 dark:text-gray-100" placeholder="e.g., Predictive Maintenance">
+                                <div class="mt-3 flex justify-between items-center text-xs font-mono text-gray-600">
+                                    <span>MD_SUPPORTED</span>
+                                    <span><span id="char-count" class="text-cyan-500">0</span> CHARS</span>
                                 </div>
                             </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Specific Requirements (Optional)</label>
-                                <textarea name="extra_context" class="w-full h-24 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50 focus:ring-2 focus:ring-flux-500 outline-none resize-none text-gray-900 dark:text-gray-100 placeholder-gray-400 text-sm"></textarea>
-                            </div>
-                        </div>
 
-                        <!-- Action Bar -->
-                        <div class="mt-8 flex justify-end items-center gap-4 border-t border-gray-100 dark:border-gray-700 pt-6">
-                            <span class="text-xs text-gray-400 flex items-center">
-                                <i class="ri-sparkling-fill text-yellow-500 mr-1"></i>
-                                Powered by LongCat Flash-Thinking
-                            </span>
-                            <button type="submit" class="group relative px-8 py-3 bg-gradient-to-r from-flux-600 to-purple-600 text-white font-bold rounded-xl shadow-lg shadow-flux-500/30 hover:shadow-flux-500/50 hover:scale-105 transition-all duration-200 overflow-hidden">
-                                <span class="relative z-10 flex items-center">
-                                    Start Research
-                                    <i class="ri-arrow-right-line ml-2 group-hover:translate-x-1 transition-transform"></i>
-                                </span>
-                                <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-flux-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            </button>
-                        </div>
-                    </form>
+                            <!-- Guided View -->
+                            <div id="tab-guided" class="tab-content hidden transition-all duration-500 space-y-8">
+                                <div>
+                                    <label class="block text-xs font-mono text-cyan-400 mb-4 uppercase tracking-widest">
+                                        // Domain_Selector
+                                    </label>
+                                    <input type="hidden" name="category" id="category-input">
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="category-pills">
+                                        <!-- Pills generated here -->
+                                        ${['SWE Tools', 'FinTech', 'HealthTech', 'EdTech', 'CyberSec', 'Social', 'Marketplace', 'IoT', 'AI/ML'].map(cat => `
+                                            <button type="button" class="category-pill py-3 px-4 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:border-white/20 hover:text-white transition-all text-sm font-medium text-left flex items-center justify-between group" data-value="${cat}">
+                                                <span>${cat}</span>
+                                                <div class="w-2 h-2 rounded-full bg-transparent border border-gray-600 group-hover:border-cyan-400 pill-indicator"></div>
+                                            </button>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div>
+                                        <label class="block text-xs font-mono text-gray-500 mb-3 uppercase">Subdomain Context</label>
+                                        <div class="relative group">
+                                            <div class="absolute -inset-0.5 bg-flux-500 rounded-xl opacity-0 group-focus-within:opacity-30 transition blur"></div>
+                                            <input type="text" name="subdomain" class="relative w-full p-4 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-flux-500 transition-colors" placeholder="e.g., Predictive Maintenance">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-mono text-gray-500 mb-3 uppercase">Target Audience</label>
+                                        <div class="relative group">
+                                            <div class="absolute -inset-0.5 bg-flux-500 rounded-xl opacity-0 group-focus-within:opacity-30 transition blur"></div>
+                                            <input type="text" name="audience" class="relative w-full p-4 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-flux-500 transition-colors" placeholder="e.g., Enterprise Admins">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-mono text-gray-500 mb-3 uppercase">Specific Constraints</label>
+                                    <textarea name="extra_context" class="w-full h-32 p-4 rounded-xl bg-slate-900 border border-white/10 text-gray-300 focus:border-flux-500 focus:outline-none resize-none text-sm placeholder-gray-700"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Action Bar -->
+                            <div class="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
+                                <div class="flex items-center gap-2 text-xs text-gray-500 font-mono">
+                                    <i class="ri-cpu-line text-flux-500 animate-pulse"></i>
+                                    <span>SYSTEM_READY :: WAITING_FOR_INPUT</span>
+                                </div>
+                                <button type="submit" class="w-full md:w-auto group relative px-8 py-4 bg-white text-black font-bold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:scale-105 transition-all duration-300 overflow-hidden">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-violet-200 to-cyan-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    <span class="relative z-10 flex items-center justify-center gap-3">
+                                        INITIALIZE_RESEARCH
+                                        <i class="ri-arrow-right-line group-hover:translate-x-1 transition-transform"></i>
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         `;
@@ -128,15 +154,50 @@ export default {
 
                 // Update UI visually
                 tabs.forEach(t => {
-                    t.classList.remove('bg-white', 'dark:bg-gray-700', 'shadow-sm', 'text-flux-600', 'dark:text-white');
-                    t.classList.add('text-gray-500', 'hover:text-gray-700', 'dark:hover:text-gray-200');
+                    t.classList.remove('bg-white/10', 'text-white', 'shadow-lg');
+                    t.classList.add('text-gray-500', 'hover:text-white');
                 });
-                btn.classList.add('bg-white', 'dark:bg-gray-700', 'shadow-sm', 'text-flux-600', 'dark:text-white');
-                btn.classList.remove('text-gray-500', 'hover:text-gray-700');
+                btn.classList.add('bg-white/10', 'text-white', 'shadow-lg');
+                btn.classList.remove('text-gray-500', 'hover:text-white');
 
                 // Toggle content
-                contents.forEach(c => c.classList.add('hidden'));
-                container.querySelector(`#tab-${mode}`).classList.remove('hidden');
+                contents.forEach(c => {
+                    c.classList.add('hidden', 'opacity-0', 'translate-y-4');
+                    c.classList.remove('opacity-100', 'translate-y-0');
+                });
+
+                const activeContent = container.querySelector(`#tab-${mode}`);
+                activeContent.classList.remove('hidden');
+                // Small timeout to allow display:block to apply before transition
+                setTimeout(() => {
+                    activeContent.classList.remove('opacity-0', 'translate-y-4');
+                    activeContent.classList.add('opacity-100', 'translate-y-0');
+                }, 10);
+            });
+        });
+
+        // Pill Selection Logic
+        const pills = container.querySelectorAll('.category-pill');
+        const categoryInput = container.querySelector('#category-input');
+
+        pills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                // Deselect all
+                pills.forEach(p => {
+                    p.classList.remove('border-flux-500', 'bg-flux-500/10', 'text-white');
+                    p.classList.add('border-white/10', 'bg-white/5', 'text-gray-400');
+                    p.querySelector('.pill-indicator').classList.remove('bg-cyan-400', 'border-transparent');
+                    p.querySelector('.pill-indicator').classList.add('bg-transparent');
+                });
+
+                // Select clicked
+                pill.classList.remove('border-white/10', 'bg-white/5', 'text-gray-400');
+                pill.classList.add('border-flux-500', 'bg-flux-500/10', 'text-white');
+                pill.querySelector('.pill-indicator').classList.remove('bg-transparent');
+                pill.querySelector('.pill-indicator').classList.add('bg-cyan-400', 'border-transparent');
+
+                // Update input
+                categoryInput.value = pill.dataset.value;
             });
         });
 
@@ -146,9 +207,6 @@ export default {
             e.preventDefault();
             const formData = new FormData(form);
 
-            // Construct payload based on active tab
-            // Actually, we should probably send everything or just what's relevant.
-            // But we need to update the project first.
             let payload = {
                 category: formData.get('category'),
                 subdomain: formData.get('subdomain'),
@@ -157,88 +215,37 @@ export default {
             };
 
             if (currentMode === 'guided') {
-                payload.original_prompt = formData.get('extra_context') || ''; // Use extra context as prompt if guided
+                const parts = [];
+                if (formData.get('audience')) parts.push(`Target Audience: ${formData.get('audience')}`);
+                if (formData.get('extra_context')) parts.push(`Context: ${formData.get('extra_context')}`);
+                payload.original_prompt = parts.join('\n') || 'Guided Mode Project';
             }
 
+            // Basic validation
+            if (currentMode === 'freestyle' && (!payload.original_prompt || payload.original_prompt.length < 5)) {
+                app.toast("Please describe your vision.", "error");
+                return;
+            }
+            if (currentMode === 'guided' && !payload.category) {
+                app.toast("Please select a category.", "error");
+                return;
+            }
+
+            const btn = form.querySelector('button[type="submit"]');
+            const originalBtnContent = btn.innerHTML;
+            btn.innerHTML = `<i class="ri-loader-4-line animate-spin text-xl"></i> INITIALIZING...`;
+            btn.disabled = true;
+
             try {
-                // Update project with new details
-                // We don't have a specific update endpoint (only status/blueprint), so we might need one or reuse create?
-                // Wait, db.py has `create_project` but not generic update. 
-                // Ah, the `create_project` in index.py creates a new one. 
-                // We need to update the existing one.
-                // I missed `update_project` endpoint in the plan/backend.
-
-                // CRITICAL FIX: The index.py only has create, get, delete, select_blueprint.
-                // We need to either create a new project here or add an update endpoint.
-                // Since we created a STUB project in dashboard view, we must UPDATE it now.
-                // OR, we delete the stub and create new? No, that breaks the ID in URL.
-                // I will update index.py to include an update endpoint or just re-purpose the flow.
-
-                // For now, let's assume I missed adding an update endpoint. 
-                // Creating a new project is easier given current backend.
-                // But the user is already on `/project/:id`.
-
-                // Let's implement a workaround: 
-                // 1. We'll use the "create" endpoint again and redirect to the NEW id.
-                // 2. And delete the old empty stub.
-                // This is hacky but consistent with "creating a plan".
-
-                // Better approach: Quickly add a PUT endpoint to index.py? 
-                // No, I can't edit index.py while in frontend task easily without context switching.
-                // wait, I can just write to index.py again if I wanted.
-
-                // Let's check `db.py`. It has `update_project_status`. Not generic update.
-                // Okay, I will modify `db.py` and `index.py` to support updating the project details.
-                // It's a small change and necessary for strict correctness.
-                // actually, I'll do it in the next step to keep this clean.
-                // For now, I'll just LOG the action and simulate success, but wait...
-                // The Research view needs this data.
-
-                // Alternative: The Create Project button in Dashboard shouldn't create a stub.
-                // It should go to `/ideation` (no ID) -> Create Project -> `/project/:new_id/research`.
-
-                // Refactoring plan:
-                // 1. Change Dashboard to link to `#/ideation` (new route for creating)
-                // 2. `IdeationView` handles creating new project on submit.
-                // 3. Existing project `/project/:id/ideation` is for EDITING.
-
-                // Let's update `app.js` routes first? 
-                // Routes: `/ideation` -> IdeationView (create mode)
-                //         `/project/:id/ideation` -> IdeationView (edit mode)
-
-                // I'll stick to the current route `/project/:id/ideation`.
-                // I will add a `delete` call for the current stub and `create` call for the new one on submit.
-                // This effectively "updates" it by replacing it. 
-                // Dirty but works without touching backend right now.
-
-                // const oldId = projectId;
-                // const newProject = await API.createProject(payload);
-                // await API.deleteProject(oldId);
-                // window.location.hash = `/project/${newProject.id}/research`;
-
-                // Wait, if I do this, the dashboard link "New Project" creates a stub.
-                // If I modify dashboard to NOT create stub, but just go to `#/ideation`, 
-                // then IdeationView needs to handle "no project ID" case.
-
-                // Let's modify Dashboard to just go to `#/new-project` (mapped to IdeationView).
-
-                // ACTUALLY: I will just use the "Create Project" API here and ignore the previous stub ID if it was empty.
-                // If the user came from an existing project (editing), we might duplicate it.
-                // Let's assume standard flow: New Project -> Stub -> Update.
-                // Since I can't update, I'll use the "Replace" strategy (Delete old, Create new).
-
-                if (payload.original_prompt.length < 10 && !payload.category) {
-                    app.toast("Please describe your idea or select a category.", "error");
-                    return;
-                }
-
-                form.querySelector('button').classList.add('opacity-75', 'cursor-not-allowed');
-                form.querySelector('button').innerHTML = 'Processing...';
-
-                // "Update" by replacement
+                // Create new project for this idea
                 const newProj = await API.createProject(payload);
 
-                // If the previous project was effectively empty/new, delete it to avoid clutter
+                // If existing project was empty/stub, delete it
+                // Logic: logic inside dashboard handles creation of stubs if we used that flow. 
+                // Here we just make sure we clean up if we can, or just redirect.
+                // Since strict constraint says we can only MODIFY specific files, 
+                // we assume backend handles cleanup or we leave it. 
+                // The previous code had a cleanup block, I'll preserve it.
                 if (project && (project.title === 'New Project' && !project.original_prompt)) {
                     await API.deleteProject(projectId);
                 }
@@ -247,8 +254,9 @@ export default {
 
             } catch (err) {
                 console.error(err);
-                app.toast("Failed to start research: " + err.message, "error");
-                form.querySelector('button').classList.remove('opacity-75', 'cursor-not-allowed');
+                app.toast("Failed to initialize: " + err.message, "error");
+                btn.innerHTML = originalBtnContent;
+                btn.disabled = false;
             }
         });
     }
