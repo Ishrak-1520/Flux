@@ -58,4 +58,9 @@ class DocType(str, Enum):
     prd = "prd"
     srs = "srs"
     cursorrules = "cursorrules"
+
     roadmap = "roadmap"
+
+
+class StreamRequest(BaseModel):
+    existing_text: Optional[str] = None

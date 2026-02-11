@@ -151,31 +151,77 @@ export const API = {
     },
 
 
+
+    /**
+     * Cache for Resumable Streaming
+     */
+    cache: {
+        save(projectId, type, content, isComplete = false) {
+            try {
+                const key = `flux_stream_${projectId}_${type}`;
+                const data = { content, isComplete, timestamp: Date.now() };
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (e) {
+                console.warn('Cache save failed', e);
+            }
+        },
+        get(projectId, type) {
+            try {
+                const key = `flux_stream_${projectId}_${type}`;
+                const raw = localStorage.getItem(key);
+                if (!raw) return null;
+                return JSON.parse(raw);
+            } catch (e) {
+                return null;
+            }
+        },
+        clear(projectId, type) {
+            localStorage.removeItem(`flux_stream_${projectId}_${type}`);
+        }
+    },
+
     /**
      * SSE Streaming Helper
      */
-    streamResearch(projectId, onChunk, onDone, onError) {
+    streamResearch(projectId, onChunk, onDone, onError, existingText = '') {
         const token = this.getToken();
         const url = `${API_BASE}/projects/${projectId}/research/stream`;
 
-        // Using EventSourcePolyfill if headers needed, but native EventSource doesn't support headers.
-        // For simple token auth with EventSource, we can pass token in query param IF supported by backend,
-        // OR use fetch for streaming. 
-        // Since we controls backend, let's use the fetch-based stream reader for better auth control.
-        this.streamWithFetch(url, token, onChunk, onDone, onError);
+        this.streamWithFetch(url, token, onChunk, onDone, onError, {
+            method: 'POST',
+            body: JSON.stringify({ existing_text: existingText }),
+            cacheKey: { projectId, type: 'research' }
+        });
     },
 
-    streamDoc(projectId, docType, onChunk, onDone, onError) {
+    streamDoc(projectId, docType, onChunk, onDone, onError, existingText = '') {
         const token = this.getToken();
         const url = `${API_BASE}/projects/${projectId}/plan/stream/${docType}`;
-        this.streamWithFetch(url, token, onChunk, onDone, onError);
+
+        this.streamWithFetch(url, token, onChunk, onDone, onError, {
+            method: 'POST',
+            body: JSON.stringify({ existing_text: existingText }),
+            cacheKey: { projectId, type: docType }
+        });
     },
 
-    async streamWithFetch(url, token, onChunk, onDone, onError) {
+    async streamWithFetch(url, token, onChunk, onDone, onError, options = {}) {
+        let fullContent = options.body ? JSON.parse(options.body).existing_text || '' : '';
+
         try {
-            const response = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const fetchOptions = {
+                method: options.method || 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (options.body) {
+                fetchOptions.body = options.body;
+            }
+
+            const response = await fetch(url, fetchOptions);
 
             if (!response.ok) throw new Error(response.statusText);
 
@@ -207,12 +253,24 @@ export const API = {
                         try {
                             const data = JSON.parse(rawData);
                             if (data.type === 'done') {
+                                // Mark as complete
+                                if (options.cacheKey) {
+                                    this.cache.save(options.cacheKey.projectId, options.cacheKey.type, fullContent, true);
+                                }
                                 if (onDone) onDone(data);
                                 return; // Stop processing
                             } else if (data.type === 'error') {
                                 if (onError) onError(new Error(data.content));
                                 return; // Stop processing
+                            } else if (data.type === 'content') {
+                                fullContent += data.content;
+                                // Cache progress
+                                if (options.cacheKey) {
+                                    this.cache.save(options.cacheKey.projectId, options.cacheKey.type, fullContent, false);
+                                }
+                                if (onChunk) onChunk(data);
                             } else {
+                                // Other types (like thinking), just pass through
                                 if (onChunk) onChunk(data);
                             }
                         } catch (e) {
@@ -222,6 +280,9 @@ export const API = {
                 }
             }
             // Fallback done if stream ends without explicit done message
+            if (options.cacheKey) {
+                this.cache.save(options.cacheKey.projectId, options.cacheKey.type, fullContent, true);
+            }
             if (onDone) onDone();
 
         } catch (err) {

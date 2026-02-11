@@ -123,28 +123,38 @@ CONSTRAINT: Do NOT use emojis or special unicode icons (like 🚀, ✅, 📝) an
 
 # ─── Streaming Generators ────────────────────────────────────
 
-async def stream_gap_analysis(prompt: str, category: str = None, subdomain: str = None):
+async def stream_gap_analysis(prompt: str, category: str = None, subdomain: str = None, existing_text: str = None):
     """Run gap analysis with the thinking model. Yields SSE-formatted chunks."""
-    user_message = ""
-    if category:
-        user_message += f"Category: {category}\n"
-        if subdomain:
-            user_message += f"Subdomain: {subdomain}\n"
-    if prompt:
-        user_message += f"Idea: {prompt}\n"
+    
+    if existing_text:
+        # Continuation Mode
+        messages = [
+            {"role": "system", "content": "You are completing a document that was interrupted. Here is the text generated so far:\n\n" + existing_text[-2000:] + "\n\nCONTINUE GENERATING EXACTLY WHERE THIS LEFT OFF. DO NOT REPEAT THE EXISTING TEXT."}
+        ]
+    else:
+        # Standard Mode
+        user_message = ""
+        if category:
+            user_message += f"Category: {category}\n"
+            if subdomain:
+                user_message += f"Subdomain: {subdomain}\n"
+        if prompt:
+            user_message += f"Idea: {prompt}\n"
 
-    if not user_message.strip():
-        user_message = "Suggest innovative project ideas across emerging technology domains."
+        if not user_message.strip():
+            user_message = "Suggest innovative project ideas across emerging technology domains."
+
+        messages = [
+            {"role": "system", "content": GAP_ANALYSIS_SYSTEM},
+            {"role": "user", "content": user_message}
+        ]
 
     print(f"DEBUG: API Key present: {bool(client.api_key)}")
-    print(f"DEBUG: User Message: {user_message[:100]}...")
+    print(f"DEBUG: Continuation Mode: {bool(existing_text)}")
 
     stream = await client.chat.completions.create(
         model=MODEL_THINKING,
-        messages=[
-            {"role": "system", "content": GAP_ANALYSIS_SYSTEM},
-            {"role": "user", "content": user_message}
-        ],
+        messages=messages,
         stream=True,
         max_tokens=8192,
         extra_body={
@@ -202,23 +212,30 @@ async def stream_gap_analysis(prompt: str, category: str = None, subdomain: str 
     yield {'type': 'done', 'thinking_length': len(thinking_buffer), 'content_length': len(content_buffer)}
 
 
-async def stream_document(project_context: str, doc_type: str):
+async def stream_document(project_context: str, doc_type: str, existing_text: str = None):
     """Generate a document (PRD, SRS, roadmap, cursorrules). Yields SSE-formatted chunks."""
-    system_prompts = {
-        "prd": PRD_SYSTEM,
-        "srs": SRS_SYSTEM,
-        "cursorrules": CURSORRULES_SYSTEM,
-        "roadmap": ROADMAP_SYSTEM
-    }
-
-    system_prompt = system_prompts.get(doc_type, PRD_SYSTEM)
+    
+    if existing_text:
+        messages = [
+            {"role": "system", "content": "You are completing a document that was interrupted. Here is the text generated so far:\n\n" + existing_text[-2000:] + "\n\nCONTINUE GENERATING EXACTLY WHERE THIS LEFT OFF. DO NOT REPEAT THE EXISTING TEXT."}
+        ]
+    else: 
+        system_prompts = {
+            "prd": PRD_SYSTEM,
+            "srs": SRS_SYSTEM,
+            "cursorrules": CURSORRULES_SYSTEM,
+            "roadmap": ROADMAP_SYSTEM
+        }
+        system_prompt = system_prompts.get(doc_type, PRD_SYSTEM)
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": project_context}
+        ]
 
     stream = await client.chat.completions.create(
         model=MODEL_CHAT,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": project_context}
-        ],
+        messages=messages,
         stream=True,
         max_tokens=8192
     )

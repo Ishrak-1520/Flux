@@ -13,7 +13,7 @@ import json
 from . import db, auth, ai_engine
 from .models import (
     RegisterRequest, LoginRequest, ProjectCreate, 
-    IdeationRequest, BlueprintSelect, DocType, ProjectUpdate
+    IdeationRequest, BlueprintSelect, DocType, ProjectUpdate, StreamRequest
 )
 
 app = FastAPI(title="Flux API", version="1.0.0")
@@ -114,6 +114,43 @@ async def delete_project(project_id: int, user_id: int = Depends(auth.get_curren
 async def update_project(project_id: int, req: ProjectUpdate, user_id: int = Depends(auth.get_current_user)):
     await db.update_project_title(project_id, req.title)
     return {"status": "updated", "id": project_id, "title": req.title}
+
+
+@app.post("/api/projects/{project_id}/research/stream")
+async def stream_research(project_id: int, req: StreamRequest, user_id: int = Depends(auth.get_current_user)):
+    project = await db.get_project(project_id, user_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # The original stream_research_endpoint had logic to save to DB after streaming.
+    # This new implementation directly returns the EventSourceResponse from ai_engine.
+    # If saving to DB is still required, it needs to be integrated into ai_engine.stream_gap_analysis
+    # or handled by a separate background task/webhook.
+    # For now, faithfully implementing the provided snippet.
+    return EventSourceResponse(
+        ai_engine.stream_gap_analysis(
+            prompt=project['original_prompt'],
+            category=project.get('category'),
+            subdomain=project.get('subdomain'),
+            existing_text=req.existing_text
+        )
+    )
+
+
+@app.post("/api/projects/{project_id}/plan/stream/{doc_type}")
+async def stream_plan(project_id: int, doc_type: DocType, req: StreamRequest, user_id: int = Depends(auth.get_current_user)):
+    project = await db.get_project(project_id, user_id)
+    if not project:
+         raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Context prompt should include project details
+    context = f"Project: {project['title']}\nCategory: {project.get('category')}\nDescription: {project['original_prompt']}"
+
+    # Similar to research stream, the original stream_doc_endpoint had DB saving logic.
+    # This new implementation directly returns the EventSourceResponse.
+    return EventSourceResponse(
+        ai_engine.stream_document(context, doc_type.value, existing_text=req.existing_text)
+    )
 
 
 @app.put("/api/projects/{project_id}/blueprint")

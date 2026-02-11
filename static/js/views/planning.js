@@ -240,27 +240,74 @@ export default {
             }
         }
 
-        function startStream(docType, targetEl, renderMarkdown) {
+        function loadTab(docType, forceRegenerate = false) {
+            docContent.innerHTML = `<div class="flex flex-col items-center justify-center py-20 text-gray-500 animate-pulse">
+                                        <i class="ri-loader-4-line text-3xl mb-4 spinning"></i>
+                                        <span class="font-mono text-xs uppercase tracking-widest">Retrieving_Data...</span>
+                                    </div>`;
+
             let content = '';
+            let renderMarkdown = docType !== 'cursorrules';
+
+            // Check cache
+            const cached = API.cache.get(projectId, docType);
+            if (cached && cached.content && !forceRegenerate) {
+                content = cached.content;
+                renderContent(content, docType);
+
+                if (cached.isComplete) {
+                    // Done, no need to stream
+                } else {
+                    // Show Resume Button Overlay
+                    const resumeContainer = document.createElement('div');
+                    resumeContainer.className = "mt-4 text-center";
+                    resumeContainer.innerHTML = `
+                       <button id="resume-btn" class="px-4 py-2 bg-flux-600 hover:bg-flux-500 text-white rounded-lg flex items-center justify-center gap-2 mx-auto transition-colors">
+                           <i class="ri-play-circle-line"></i> Resume Generation
+                       </button>
+                   `;
+                    docContent.appendChild(resumeContainer);
+
+                    docContent.querySelector('#resume-btn').onclick = () => {
+                        resumeContainer.remove();
+                        startStream(docType, docContent, renderMarkdown, content);
+                    };
+                    return; // Wait for user action
+                }
+                if (cached.isComplete) return; // Don't stream if done
+            }
+
+            // Auto-start if no cache or cache is empty or forceRegenerate
+            startStream(docType, docContent, renderMarkdown, content);
+        }
+
+        function startStream(docType, targetEl, renderMarkdown, existingText = '') {
+            let content = existingText;
+
+            if (!existingText) {
+                targetEl.innerHTML = '<div class="text-center py-20 animate-pulse text-gray-500"><i class="ri-loader-4-line text-3xl mb-4 spinning"></i><br>Generating technical specs...</div>';
+            }
 
             API.streamDoc(
                 projectId,
                 docType,
-                (data) => {
-                    if (data.type === 'content') {
-                        content += data.content;
-                        if (renderMarkdown) {
-                            targetEl.innerHTML = marked.parse(content);
-                        } else {
-                            targetEl.textContent = content;
-                        }
+                (chunk) => {
+                    if (!existingText && content === '') {
+                        targetEl.innerHTML = ''; // Clear loader on first chunk
+                    }
+                    content += chunk.content;
+                    if (renderMarkdown) {
+                        targetEl.innerHTML = marked.parse(content);
+                    } else {
+                        targetEl.textContent = content;
                     }
                 },
-                (data) => {
+                () => { // onComplete callback
                     docCache[docType] = content;
-                    renderContent(content, docType);
+                    API.cache.set(projectId, docType, { content: content, isComplete: true });
+                    renderContent(content, docType); // Final render to ensure all styling is applied
                 },
-                (err) => {
+                (err) => { // onError callback
                     console.error(err);
                     targetEl.innerHTML = `<div class="p-4 rounded border border-red-500/20 bg-red-500/5 text-red-400 text-xs font-mono">Stream Error: ${err.message}</div>`;
                 }
