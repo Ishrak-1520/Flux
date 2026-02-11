@@ -129,13 +129,15 @@ export default {
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h1 class="text-3xl font-bold text-white flex items-center gap-3">
-                            <i class="ri-hammer-line text-purple-400"></i> The Forge
+                            <i class="ri-magic-line text-purple-400"></i> Code Generator
                         </h1>
-                        <p class="text-gray-400 text-sm font-mono">Auto-Scaffolding Engine</p>
+                        <p class="text-gray-400 text-sm font-mono italic">Creates the folders, files, and starter code you need to begin.</p>
                     </div>
                     <div class="flex gap-3">
-                        <button id="btn-generate" onclick="window.triggerScaffold()" class="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold shadow-lg shadow-purple-500/20 transition-all flex items-center gap-2 cursor-pointer">
-                            <i class="ri-cpu-line"></i> Initialize Scaffold
+                        <button id="btn-generate" onclick="window.triggerScaffold()" class="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold shadow-lg shadow-purple-500/20 transition-all flex flex-col items-center cursor-pointer">
+                            <div class="flex items-center gap-2">
+                                <i class="ri-magic-line"></i> Generate Project Files
+                            </div>
                         </button>
                          <button id="btn-download" onclick="window.downloadZip()" class="hidden px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-bold shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2 cursor-pointer">
                             <i class="ri-download-cloud-line"></i> Download ZIP

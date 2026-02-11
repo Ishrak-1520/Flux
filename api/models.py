@@ -61,12 +61,18 @@ class DocType(str, Enum):
     roadmap = "roadmap"
 
 
+class TechStackItem(BaseModel):
+    category: str      # e.g. "Frontend"
+    technology: str    # e.g. "React"
+    reason: str        # e.g. "Great for beginners..."
+
+
 class BlueprintItem(BaseModel):
     title: str
     tagline: str
     problem: str
     solution: str
-    tech_stack: List[str]
+    tech_stack: List[TechStackItem]
     complexity: str  # e.g. "Low", "Medium", "High"
 
 class BlueprintResponse(BaseModel):

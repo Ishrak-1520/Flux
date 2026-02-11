@@ -28,7 +28,7 @@ export default {
                              <div class="p-2 rounded-lg bg-flux-500/10 border border-flux-500/20 text-flux-400">
                                 <i class="ri-search-eye-line text-xl"></i>
                              </div>
-                             <h1 class="text-3xl font-bold text-white tracking-tight">Market Research</h1>
+                             <h1 class="text-3xl font-bold text-white tracking-tight">Idea Explorer</h1>
                         </div>
                         <p class="text-gray-400 font-mono text-sm">
                             Target: <span class="text-cyan-400">${project.category || 'Uncategorized'}</span> // <span class="text-flux-400">${project.title}</span>
@@ -40,7 +40,7 @@ export default {
                           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
                           <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
                         </span>
-                        <span>INITIALIZING_AGENT_SWARM...</span>
+                        <span>Getting things ready...</span>
                     </div>
                 </div>
 
@@ -70,7 +70,7 @@ export default {
                             
                             <div class="glass-panel p-8 rounded-none border border-white/10 min-h-[500px] bg-slate-950/50">
                                 <div class="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-                                    <span class="font-mono text-xs text-flux-400 uppercase">/// Analysis_Output_Stream</span>
+                                    <span class="font-mono text-xs text-flux-400 uppercase">/// Researching the Web...</span>
                                     <div class="flex gap-2">
                                         <div class="w-2 h-2 bg-red-500/20 rounded-full"></div>
                                         <div class="w-2 h-2 bg-yellow-500/20 rounded-full"></div>
@@ -93,7 +93,7 @@ export default {
                         <div class="sticky top-8">
                             <h3 class="flex items-center gap-2 text-sm font-bold text-white uppercase tracking-widest mb-6">
                                 <i class="ri-blueprint-line text-flux-500"></i>
-                                Architectural Schematics
+                                Starter Ideas (Blueprints)
                             </h3>
                             <div id="blueprints-container" class="space-y-4">
                                 <!-- Blueprints will be injected here -->
@@ -166,7 +166,7 @@ export default {
                         statusBadge.innerHTML = `<i class="ri-file-text-line"></i><span>GENERATING_REPORT_MATRIX...</span>`;
                     } else if (data.content === 'architecting') {
                         statusBadge.className = "px-4 py-2 rounded-lg bg-purple-500/5 text-purple-400 border border-purple-500/20 flex items-center gap-3 font-mono text-xs";
-                        statusBadge.innerHTML = `<i class="ri-layout-masonry-line"></i><span>CONSTRUCTING_SCHEMATICS (JSON)...</span>`;
+                        statusBadge.innerHTML = `<i class="ri-layout-masonry-line"></i><span>Planning your code...</span>`;
                     }
                 }
                 else if (data.type === 'blueprints_data') {
@@ -235,6 +235,21 @@ export default {
                         </div>
                         <p class="text-xs text-cyan-400 font-mono mb-2">${tagline}</p>
                         <p class="text-xs text-gray-400 line-clamp-3 mb-4 leading-relaxed relative z-10">${problem}</p>
+                        
+                        <!-- Tech Stack with Reasons -->
+                        <div class="mb-4 space-y-2 relative z-10">
+                            <div class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Recommended Tools:</div>
+                            ${(bp.tech_stack || []).map(t => `
+                                <div class="bg-white/5 rounded p-2 border border-white/5">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-[10px] font-bold text-gray-300">${t.category}</span>
+                                        <span class="text-[10px] text-flux-400 font-mono">${t.technology}</span>
+                                    </div>
+                                    <div class="text-[10px] text-green-300 italic leading-tight">"${t.reason || 'Easy to learn and very popular.'}"</div>
+                                </div>
+                            `).join('')}
+                        </div>
+
                         <div class="flex items-center justify-between mt-auto pt-3 border-t border-white/5 relative z-10">
                             <span class="text-[10px] text-gray-400 font-mono flex items-center gap-1">
                                 <div class="w-1.5 h-1.5 rounded-full ${['High', 'Hard'].includes(complexity) ? 'bg-red-500' : ['Low', 'Easy'].includes(complexity) ? 'bg-green-500' : 'bg-yellow-500'}"></div>

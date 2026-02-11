@@ -158,6 +158,7 @@ async def stream_research_endpoint(
         blueprints_json = "[]"
         
         try:
+            print(f"🔍 Researching the Web for your idea...")
             async for data in ai_engine.stream_gap_analysis(context):
                 if data["type"] == "thinking" and data.get("content"):
                     thinking_log += data["content"]

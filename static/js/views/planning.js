@@ -66,8 +66,8 @@ export default {
                             <span class="text-gray-400">SRS</span>
                         </button>
                         <button class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all doc-tab" data-doc="cursorrules">
-                            <i class="ri-code-s-slash-line text-gray-500"></i>
-                            <span class="text-gray-400">.cursorrules</span>
+                            <i class="ri-robot-line text-gray-500"></i>
+                            <span class="text-gray-400">AI Instructions</span>
                         </button>
                     </nav>
 
@@ -75,7 +75,7 @@ export default {
 
                     <div class="p-4 border-t border-white/5 space-y-2">
                         <button id="btn-build-arch" class="flex items-center justify-center gap-2 w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-green-900/20">
-                            <i class="ri-hammer-line"></i> Build This Architecture
+                            <i class="ri-magic-line"></i> Send to Code Generator
                         </button>
                          <a href="#/project/${projectId}/export" class="flex items-center justify-center gap-2 w-full py-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg text-xs font-medium transition-colors border border-white/5">
                             <i class="ri-download-cloud-line"></i> Export Assets
@@ -99,7 +99,7 @@ export default {
                          <!-- Content Area -->
                          <div class="max-w-4xl mx-auto">
                              <div id="doc-header" class="mb-8 pb-4 border-b border-white/5">
-                                <h1 class="text-3xl font-bold text-white mb-2" id="doc-title">Implementation Roadmap</h1>
+                                <h1 class="text-3xl font-bold text-white mb-2" id="doc-title">Improvement Ideas</h1>
                                 <p class="text-sm text-gray-500 font-mono" id="doc-status">STATUS: SYNC_COMPLETE</p>
                              </div>
                              
@@ -123,10 +123,10 @@ export default {
         let activeDoc = 'roadmap';
         const docCache = {};
         const docTitles = {
-            'roadmap': 'Implementation Roadmap',
-            'prd': 'Product Requirements Docs',
-            'srs': 'Software Requirements Spec',
-            'cursorrules': 'Cursor Context Rules'
+            'roadmap': 'Improvement Ideas',
+            'prd': 'Product Plan (PRD)',
+            'srs': 'Step-by-Step Logic (SRS)',
+            'cursorrules': 'AI Instructions (.cursorrules)'
         };
 
         // --- Start of Task 3 Rename Logic ---
