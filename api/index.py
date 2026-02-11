@@ -13,7 +13,7 @@ import json
 from . import db, auth, ai_engine
 from .models import (
     RegisterRequest, LoginRequest, ProjectCreate, 
-    IdeationRequest, BlueprintSelect, DocType
+    IdeationRequest, BlueprintSelect, DocType, ProjectUpdate
 )
 
 app = FastAPI(title="Flux API", version="1.0.0")
@@ -109,8 +109,6 @@ async def delete_project(project_id: int, user_id: int = Depends(auth.get_curren
     await db.delete_project(project_id, user_id)
     return {"status": "deleted"}
 
-class ProjectUpdate(BaseModel):
-    title: str
 
 @app.patch("/api/projects/{project_id}")
 async def update_project(project_id: int, req: ProjectUpdate, user_id: int = Depends(auth.get_current_user)):

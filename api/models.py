@@ -33,7 +33,13 @@ class ProjectCreate(BaseModel):
     category: Optional[str] = None
     subdomain: Optional[str] = None
     original_prompt: Optional[str] = None
+
     entry_mode: str = Field(default="freestyle")  # "freestyle" or "guided"
+
+
+class ProjectUpdate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=255)
+
 
 
 class BlueprintSelect(BaseModel):

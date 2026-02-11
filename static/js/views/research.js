@@ -30,8 +30,10 @@ export default {
                              </div>
                              <h1 class="text-3xl font-bold text-white tracking-tight">Market Research</h1>
                         </div>
-                        <p class="text-gray-400 font-mono text-sm">
-                            Target: <span class="text-cyan-400">${project.category || 'Uncategorized'}</span> // <span class="text-flux-400">${project.title}</span>
+                        <p class="text-gray-400 font-mono text-sm flex items-center gap-2">
+                            Target: <span class="text-cyan-400">${project.category || 'Uncategorized'}</span> 
+                            <span class="text-gray-600">//</span> 
+                            <span id="project-title" class="text-flux-400 hover:text-white cursor-pointer border-b border-dashed border-transparent hover:border-flux-400 transition-colors" title="Click to rename">${project.title}</span>
                         </p>
                     </div>
                     
@@ -116,6 +118,41 @@ export default {
         const reportContent = container.querySelector('#report-content');
         const blueprintsContainer = container.querySelector('#blueprints-container');
         const statusBadge = container.querySelector('#status-badge');
+        const projectTitle = container.querySelector('#project-title');
+
+        // Rename Logic
+        projectTitle.addEventListener('click', () => {
+            const currentTitle = projectTitle.textContent;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentTitle;
+            input.className = "bg-transparent border-b border-flux-400 text-white focus:outline-none font-mono text-sm w-48";
+
+            projectTitle.replaceWith(input);
+            input.focus();
+
+            const save = async () => {
+                const newTitle = input.value.trim();
+                if (newTitle && newTitle !== currentTitle) {
+                    try {
+                        await API.updateProjectTitle(projectId, newTitle);
+                        app.toast('Project renamed', 'success');
+                        projectTitle.textContent = newTitle;
+                    } catch (err) {
+                        app.toast(err.message, 'error');
+                        projectTitle.textContent = currentTitle;
+                    }
+                }
+                input.replaceWith(projectTitle);
+            };
+
+            input.addEventListener('blur', save);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    input.blur();
+                }
+            });
+        });
 
         // Toggle Thinking
         thinkingToggle.addEventListener('click', () => {
