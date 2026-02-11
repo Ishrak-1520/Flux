@@ -159,14 +159,33 @@ export default {
 
                     // Render Markdown
                     reportContent.innerHTML = marked.parse(fullMarkdown);
-
-                    // Attempt to extract and render blueprints
-                    renderBlueprints(fullMarkdown);
                 }
                 else if (data.type === 'phase') {
                     if (data.content === 'analysis') {
                         statusBadge.className = "px-4 py-2 rounded-lg bg-blue-500/5 text-blue-400 border border-blue-500/20 flex items-center gap-3 font-mono text-xs";
                         statusBadge.innerHTML = `<i class="ri-file-text-line"></i><span>GENERATING_REPORT_MATRIX...</span>`;
+                    } else if (data.content === 'architecting') {
+                        statusBadge.className = "px-4 py-2 rounded-lg bg-purple-500/5 text-purple-400 border border-purple-500/20 flex items-center gap-3 font-mono text-xs";
+                        statusBadge.innerHTML = `<i class="ri-layout-masonry-line"></i><span>CONSTRUCTING_SCHEMATICS (JSON)...</span>`;
+                    }
+                }
+                else if (data.type === 'blueprints_data') {
+                    // Render Blueprints from JSON
+                    try {
+                        console.log("🔹 Raw Blueprint Data String:", data.data);
+                        let parsed = data.data;
+                        if (typeof parsed === 'string') {
+                            parsed = JSON.parse(parsed);
+                        }
+
+                        // Handle nested "blueprints" key if the AI wrapped it
+                        const list = Array.isArray(parsed) ? parsed : (parsed.blueprints || []);
+
+                        console.log("🔹 Parsed Blueprints List:", list);
+                        renderBlueprintsJSON(list);
+                    } catch (e) {
+                        console.error("Blueprint Parse Error", e);
+                        blueprintsContainer.innerHTML = `<div class="text-red-500 text-xs p-4">JSON Parse Error: ${e.message}</div>`;
                     }
                 }
             },
@@ -174,7 +193,6 @@ export default {
                 isDone = true;
                 statusBadge.className = "px-4 py-2 rounded-lg bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 flex items-center gap-3 font-mono text-xs";
                 statusBadge.innerHTML = `<i class="ri-check-double-line"></i><span>ANALYSIS_COMPLETE</span>`;
-                renderBlueprints(fullMarkdown, true); // Final pass
             },
             (err) => {
                 console.error(err);
@@ -186,73 +204,60 @@ export default {
             }
         );
 
-        // Helper to extract blueprints
-        function renderBlueprints(markdown, final = false) {
-            const blueprintRegex = /##\s*Blueprint\s*:\s*(.*?)\n([\s\S]*?)(?=##\s*Blueprint|$)/gi;
-            const matches = [...markdown.matchAll(blueprintRegex)];
+        // Robust Blueprint Renderer
+        function renderBlueprintsJSON(blueprints) {
+            const container = document.getElementById('blueprints-container');
+            container.innerHTML = '';
 
-            if (matches.length > 0) {
-                blueprintsContainer.innerHTML = '';
-                matches.forEach((match, index) => {
-                    let title = match[1].trim().replace(/\*\*/g, '').replace(/##/g, '').trim();
-                    const content = match[2].trim();
+            // Safety check: sometimes the AI returns { "blueprints": [...] } and sometimes just [...]
+            const list = Array.isArray(blueprints) ? blueprints : (blueprints.blueprints || []);
 
-                    let description = 'System Generated';
-                    const taglineMatch = content.match(/\*\*Tagline\*\*:\s*(.*)/i) || content.match(/Tagline:\s*(.*)/i);
-                    const problemMatch = content.match(/\*\*Problem\*\*:\s*(.*)/i) || content.match(/Problem:\s*(.*)/i);
+            if (list.length === 0) {
+                container.innerHTML = '<div class="text-red-400 text-xs font-mono p-4 border border-red-500/20 rounded">Error: No valid blueprints found in JSON.</div>';
+                console.error("Invalid Blueprint Data:", blueprints);
+                return;
+            }
 
-                    if (taglineMatch) description = taglineMatch[1].trim();
-                    else if (problemMatch) description = problemMatch[1].trim();
+            list.forEach((bp, index) => {
+                // Fallback Mapping: Try standard keys, then common variations
+                const title = bp.title || bp.name || bp.project_name || "Untitled Project";
+                const tagline = bp.tagline || bp.description || "No tagline available";
+                const problem = bp.problem || bp.gap || "Problem definition missing";
+                const complexity = bp.complexity || bp.difficulty || "Medium";
 
-                    const card = document.createElement('div');
-                    card.className = "group relative p-[1px] rounded-xl bg-gradient-to-br from-white/10 to-transparent hover:from-flux-500/50 hover:to-cyan-500/50 transition-all duration-300 cursor-pointer mb-4";
-
-                    card.innerHTML = `
-                        <div class="bg-gray-900/90 backdrop-blur rounded-xl p-5 relative overflow-hidden group-hover:bg-gray-900/80 transition-colors">
-                            <!-- Technical Grid Background -->
-                            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-20"></div>
-                            
-                            <div class="flex justify-between items-start mb-3 relative z-10">
-                                 <h4 class="font-bold text-white group-hover:text-cyan-400 transition-colors tracking-tight">${title}</h4>
-                                 <span class="font-mono text-[10px] text-gray-500 border border-white/10 px-1.5 py-0.5 rounded bg-black/40">BP_0${index + 1}</span>
-                            </div>
-                            
-                            <p class="text-xs text-gray-400 line-clamp-3 mb-4 leading-relaxed relative z-10">${description}</p>
-                            
-                            <div class="flex items-center justify-between mt-auto pt-3 border-t border-white/5 relative z-10">
-                                <span class="text-[10px] text-gray-600 font-mono">CONFIDENCE: HIGH</span>
-                                <button class="flex items-center gap-1 text-xs font-bold text-flux-400 group-hover:text-flux-300 transition-colors">
-                                    SELECT <i class="ri-arrow-right-line"></i>
-                                </button>
-                            </div>
+                const card = document.createElement('div');
+                card.className = "group relative p-[1px] rounded-xl bg-gradient-to-br from-white/10 to-transparent hover:from-cyan-500/50 transition-all duration-300 cursor-pointer mb-4";
+                card.innerHTML = `
+                    <div class="bg-gray-900/90 backdrop-blur rounded-xl p-5 relative overflow-hidden group-hover:bg-gray-900/80 transition-colors">
+                        <div class="flex justify-between items-start mb-3 relative z-10">
+                             <h4 class="font-bold text-white group-hover:text-cyan-400 transition-colors tracking-tight text-lg">${title}</h4>
+                             <span class="font-mono text-[10px] text-gray-500 border border-white/10 px-1.5 py-0.5 rounded bg-black/40">BP_0${index + 1}</span>
                         </div>
-                    `;
+                        <p class="text-xs text-cyan-400 font-mono mb-2">${tagline}</p>
+                        <p class="text-xs text-gray-400 line-clamp-3 mb-4 leading-relaxed relative z-10">${problem}</p>
+                        <div class="flex items-center justify-between mt-auto pt-3 border-t border-white/5 relative z-10">
+                            <span class="text-[10px] text-gray-400 font-mono flex items-center gap-1">
+                                <div class="w-1.5 h-1.5 rounded-full ${['High', 'Hard'].includes(complexity) ? 'bg-red-500' : ['Low', 'Easy'].includes(complexity) ? 'bg-green-500' : 'bg-yellow-500'}"></div>
+                                ${complexity}
+                            </span>
+                            <span class="text-xs text-cyan-300 font-bold group-hover:translate-x-1 transition-transform">SELECT ></span>
+                        </div>
+                    </div>
+                `;
 
-                    card.addEventListener('click', async () => {
-                        if (!confirm(`Initialize implementation sequence for "${title}"?`)) return;
-
+                card.addEventListener('click', async () => {
+                    if (confirm(`Initialize implementation sequence for "${title}"?`)) {
                         try {
                             await API.selectBlueprint(projectId, index);
                             window.location.hash = `/project/${projectId}/planning`;
                         } catch (err) {
-                            app.toast(err.message, 'error');
+                            console.error(err);
+                            alert("Failed to select blueprint. Check console.");
                         }
-                    });
-
-                    blueprintsContainer.appendChild(card);
+                    }
                 });
-            } else if (final && (blueprintsContainer.children.length === 0 || blueprintsContainer.innerHTML.includes('Awaiting'))) {
-                const debugSnippet = markdown.substring(0, 100).replace(/</g, '&lt;');
-                blueprintsContainer.innerHTML = `
-                    <div class="p-4 rounded border border-red-500/20 bg-red-500/5 text-center text-red-400 text-xs font-mono">
-                        <i class="ri-error-warning-line text-xl mb-2 block"></i>
-                        PARSING_ERROR: NO_BLUEPRINTS_DETECTED
-                        <div class="mt-2 text-[10px] text-gray-500 text-left bg-black/30 p-2 rounded border border-red-900/30 overflow-hidden text-clip whitespace-nowrap">
-                            ${debugSnippet}...
-                        </div>
-                    </div>
-                `;
-            }
+                container.appendChild(card);
+            });
         }
     }
 };

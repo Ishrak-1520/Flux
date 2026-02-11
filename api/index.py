@@ -152,6 +152,7 @@ async def stream_research_endpoint(
     async def event_generator():
         thinking_log = ""
         full_content = ""
+        blueprints_json = "[]"
         
         try:
             async for data in ai_engine.stream_gap_analysis(context):
@@ -159,6 +160,8 @@ async def stream_research_endpoint(
                     thinking_log += data["content"]
                 elif data["type"] == "content" and data.get("content"):
                     full_content += data["content"]
+                elif data["type"] == "blueprints_data" and data.get("data"):
+                     blueprints_json = json.dumps(data["data"])
                 elif data["type"] == "done":
                     # We'll yield the done event ourselves after saving
                     continue
@@ -167,7 +170,7 @@ async def stream_research_endpoint(
 
             # Save result to DB after streaming completes
             if full_content:
-                await db.save_research(project_id, full_content, "[]", thinking_log)
+                await db.save_research(project_id, full_content, blueprints_json, thinking_log)
                 await db.update_project_status(project_id, "research")
                 # Yield done event manually
                 yield {"data": json.dumps({'type': 'done', 'content_length': len(full_content)})}

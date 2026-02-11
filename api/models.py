@@ -59,3 +59,16 @@ class DocType(str, Enum):
     srs = "srs"
     cursorrules = "cursorrules"
     roadmap = "roadmap"
+
+
+class BlueprintItem(BaseModel):
+    title: str
+    tagline: str
+    problem: str
+    solution: str
+    tech_stack: List[str]
+    complexity: str  # e.g. "Low", "Medium", "High"
+
+class BlueprintResponse(BaseModel):
+    blueprints: List[BlueprintItem]
+

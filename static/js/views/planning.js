@@ -237,6 +237,54 @@ export default {
                 docContent.querySelectorAll('th').forEach(t => t.classList.add('text-left', 'p-2', 'border-b', 'border-white/10', 'text-gray-400', 'font-mono', 'uppercase', 'text-xs'));
                 docContent.querySelectorAll('td').forEach(t => t.classList.add('p-2', 'border-b', 'border-white/5', 'text-gray-300'));
                 docContent.querySelectorAll('input[type="checkbox"]').forEach(c => c.classList.add('accent-flux-500', 'mr-2', 'h-4', 'w-4', 'bg-slate-800', 'border-gray-600', 'rounded'));
+
+                // Visual Intelligence: Render Mermaid Diagrams with Entity Decoding
+                setTimeout(async () => {
+                    // Select all mermaid blocks (usually <code class="language-mermaid">)
+                    const mermaidBlocks = docContent.querySelectorAll('pre code.language-mermaid');
+
+                    for (const block of mermaidBlocks) {
+                        try {
+                            // 1. Get raw text
+                            let graphDefinition = block.textContent;
+
+                            // 2. CRITICAL: Decode HTML entities (e.g., converts 'A &gt; B' back to 'A > B')
+                            const txt = document.createElement("textarea");
+                            txt.innerHTML = graphDefinition;
+                            graphDefinition = txt.value;
+
+                            // 3. Create container
+                            const newDiv = document.createElement('div');
+                            newDiv.className = 'mermaid bg-black/20 rounded-lg p-4 my-6 overflow-x-auto text-center border border-white/5';
+                            newDiv.textContent = graphDefinition;
+
+                            // 4. Swap DOM elements
+                            const preElement = block.parentElement; // The <pre> tag
+                            if (preElement && preElement.tagName === 'PRE') {
+                                preElement.replaceWith(newDiv);
+                            } else {
+                                block.replaceWith(newDiv);
+                            }
+                        } catch (err) {
+                            console.warn("Mermaid Prep Error:", err);
+                        }
+                    }
+
+                    // 5. Run Mermaid safely
+                    if (window.mermaid) {
+                        try {
+                            await window.mermaid.run({
+                                querySelector: '.mermaid'
+                            });
+                        } catch (err) {
+                            console.error("Mermaid Render Failed:", err);
+                            // Mark failed blocks visually so user knows
+                            docContent.querySelectorAll('.mermaid[data-processed!="true"]').forEach(el => {
+                                el.innerHTML = `<div class="text-red-500 text-xs font-mono p-2 border border-red-500/30 bg-red-500/10 rounded">Diagram Render Error (Syntax)</div>`;
+                            });
+                        }
+                    }
+                }, 100);
             }
         }
 

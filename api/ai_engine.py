@@ -29,14 +29,19 @@ To ensure credibility, you MUST include this section at the end of the Gap Repor
    - Format: `* **[Source Name]**: [Relevance/Insight]`
 """
 
+VISUAL_PROTOCOL = """
+## Visual Intelligence Protocol
+Whenever describing processes, architecture, or timelines, you MUST include a Mermaid.js diagram wrapped in ```mermaid blocks.
+- **User Flows**: Use `graph TD` to show user journey.
+- **Databases**: Use `erDiagram` for schema relationships.
+- **Roadmaps**: Use `gantt` for timelines.
+- **System Architecture**: Use `flowchart LR` for component interaction.
+"""
+
 FORMATTING_REMINDER = """
 CRITICAL STRUCTURAL RULES:
 1. The document MUST start with `## Gap Report`.
-2. The `## References` section MUST come AFTER the Gap Report but BEFORE the Blueprints.
-3. You MUST output exactly 3 Blueprints.
-4. Each Blueprint MUST start with the exact header: `## Blueprint: [Project Name]`. 
-   - DO NOT use `### Blueprint` or `**Blueprint**`.
-   - The frontend parser relies on `## Blueprint:`.
+3. The `## References` section MUST come AFTER the Gap Report.
 """
 
 # ─── SYSTEM PROMPTS ──────────────────────────────────────────
@@ -48,7 +53,6 @@ PROCESS:
 1. **Analyze**: detailed breakdown of the user's idea/industry.
 2. **Gaps**: Identify 3-5 critical market gaps.
 3. **References**: List sources as defined in the protocol.
-4. **Blueprints**: Propose 3 refined project ideas.
 
 {CITATION_PROTOCOL}
 
@@ -60,10 +64,33 @@ STRICT OUTPUT CONSTRAINTS:
 - Professional tone.
 """
 
-PRD_SYSTEM = f"You are an expert Product Manager. Write a detailed PRD. {CITATION_PROTOCOL} NO EMOJIS."
-SRS_SYSTEM = f"You are a Senior Architect. Write a Technical System Spec. {CITATION_PROTOCOL} NO EMOJIS."
-ROADMAP_SYSTEM = f"You are a Project Lead. Write a step-by-step implementation plan. {CITATION_PROTOCOL} NO EMOJIS."
+PRD_SYSTEM = f"You are an expert Product Manager. Write a detailed PRD. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} NO EMOJIS."
+SRS_SYSTEM = f"You are a Senior Architect. Write a Technical System Spec. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} NO EMOJIS."
+ROADMAP_SYSTEM = f"You are a Project Lead. Write a step-by-step implementation plan. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} NO EMOJIS."
 CURSORRULES_SYSTEM = f"You are a Senior Dev. Write a .cursorrules file. {CITATION_PROTOCOL} NO EMOJIS."
+
+BLUEPRINT_GENERATOR_SYSTEM = """You are a System Architect.
+Based on the provided analysis, generate exactly 3 distinct Project Blueprints.
+Return ONLY valid JSON matching this exact schema:
+
+{
+  "blueprints": [
+    {
+      "title": "Project Name Here",
+      "tagline": "Short elevator pitch",
+      "problem": "The specific gap addressed",
+      "solution": "Technical solution overview",
+      "complexity": "High",
+      "tech_stack": "Python, React, AWS"
+    }
+  ]
+}
+
+CRITICAL RULES:
+1. Keys MUST be lowercase: 'title', 'tagline', 'problem', 'solution', 'complexity', 'tech_stack'.
+2. Do NOT use keys like 'name', 'project_name', or 'difficulty'.
+3. Return ONLY the JSON object. No markdown formatting.
+"""
 
 
 # ─── GENERATORS (CRASH-PROOF) ────────────────────────────────
@@ -90,9 +117,6 @@ async def stream_gap_analysis(project_context: str, existing_text: str = ""):
 INSTRUCTIONS:
 1. Write a Market Gap Analysis.
 2. Add a 'References' section.
-3. Write 3 Blueprints.
-
-IMPORTANT: Start each blueprint with '## Blueprint: Name'. Do not use '###'.
 """
             messages = [
                 {"role": "system", "content": GAP_ANALYSIS_SYSTEM},
@@ -131,11 +155,39 @@ IMPORTANT: Start each blueprint with '## Blueprint: Name'. Do not use '###'.
 
         yield {'type': 'done', 'content_length': len(content_buffer)}
 
+        # 5. Generate Blueprints (JSON Mode)
+        yield {'type': 'phase', 'content': 'architecting'}
+        
+        blueprints_json = await generate_blueprints_json(content_buffer)
+        if blueprints_json:
+            yield {'type': 'blueprints_data', 'data': blueprints_json}
+
     except Exception as e:
         # Silent error log
         try: print(f"AI Error: {e}") 
         except: pass
         yield {'type': 'error', 'content': f"AI Error: {str(e)}"}
+
+
+async def generate_blueprints_json(context: str):
+    """Generates 3 structured blueprints in JSON format based on the analysis."""
+    try:
+        from api.models import BlueprintResponse
+
+        completion = await client.chat.completions.create(
+            model=MODEL_THINKING,
+            messages=[
+                {"role": "system", "content": BLUEPRINT_GENERATOR_SYSTEM},
+                {"role": "user", "content": f"ANALYSIS:\n{context}\n\nTASK: Generate 3 blueprints."}
+            ],
+            response_format={"type": "json_object"}
+        )
+        
+        content = completion.choices[0].message.content
+        return json.loads(content)
+    except Exception as e:
+        print(f"Blueprint Generation Error: {e}")
+        return None
 
 
 async def stream_document(project_context: str, doc_type: str, existing_text: str = ""):
