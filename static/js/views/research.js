@@ -30,10 +30,8 @@ export default {
                              </div>
                              <h1 class="text-3xl font-bold text-white tracking-tight">Market Research</h1>
                         </div>
-                        <p class="text-gray-400 font-mono text-sm flex items-center gap-2">
-                            Target: <span class="text-cyan-400">${project.category || 'Uncategorized'}</span> 
-                            <span class="text-gray-600">//</span> 
-                            <span id="project-title" class="text-flux-400 hover:text-white cursor-pointer border-b border-dashed border-transparent hover:border-flux-400 transition-colors" title="Click to rename">${project.title}</span>
+                        <p class="text-gray-400 font-mono text-sm">
+                            Target: <span class="text-cyan-400">${project.category || 'Uncategorized'}</span> // <span class="text-flux-400">${project.title}</span>
                         </p>
                     </div>
                     
@@ -118,41 +116,6 @@ export default {
         const reportContent = container.querySelector('#report-content');
         const blueprintsContainer = container.querySelector('#blueprints-container');
         const statusBadge = container.querySelector('#status-badge');
-        const projectTitle = container.querySelector('#project-title');
-
-        // Rename Logic
-        projectTitle.addEventListener('click', () => {
-            const currentTitle = projectTitle.textContent;
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = currentTitle;
-            input.className = "bg-transparent border-b border-flux-400 text-white focus:outline-none font-mono text-sm w-48";
-
-            projectTitle.replaceWith(input);
-            input.focus();
-
-            const save = async () => {
-                const newTitle = input.value.trim();
-                if (newTitle && newTitle !== currentTitle) {
-                    try {
-                        await API.updateProjectTitle(projectId, newTitle);
-                        app.toast('Project renamed', 'success');
-                        projectTitle.textContent = newTitle;
-                    } catch (err) {
-                        app.toast(err.message, 'error');
-                        projectTitle.textContent = currentTitle;
-                    }
-                }
-                input.replaceWith(projectTitle);
-            };
-
-            input.addEventListener('blur', save);
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    input.blur();
-                }
-            });
-        });
 
         // Toggle Thinking
         thinkingToggle.addEventListener('click', () => {
@@ -165,103 +128,63 @@ export default {
         let thinkingText = '';
         let isDone = false;
 
-        // Check Cache
-        const cached = API.cache.get(projectId, 'research');
-        if (cached && cached.content) {
-            fullMarkdown = cached.content;
-            reportContent.innerHTML = marked.parse(fullMarkdown);
-            renderBlueprints(fullMarkdown, cached.isComplete);
+        // Start Streaming
+        API.streamResearch(
+            projectId,
+            (data) => {
+                // Handle AI "thinking" tokens separately
+                if (data.type === 'thinking') {
+                    thinkingText += data.content;
+                    thinkingLog.textContent = thinkingText;
+                    thinkingContainer.scrollTop = thinkingContainer.scrollHeight;
 
-            if (cached.isComplete) {
+                    // Update status badge with thinking visual
+                    if (statusBadge) {
+                        const thought = data.content.trim();
+                        if (thought) {
+                            statusBadge.innerHTML = `
+                                <span class="relative flex h-2 w-2">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+                                </span>
+                                <span class="truncate max-w-[200px]">PROCESSING_NODE: ${thought.substring(0, 20).replace(/\n/g, '')}...</span>
+                             `;
+                        }
+                    }
+                    return;
+                }
+
+                if (data.type === 'content') {
+                    fullMarkdown += data.content;
+
+                    // Render Markdown
+                    reportContent.innerHTML = marked.parse(fullMarkdown);
+
+                    // Attempt to extract and render blueprints
+                    renderBlueprints(fullMarkdown);
+                }
+                else if (data.type === 'phase') {
+                    if (data.content === 'analysis') {
+                        statusBadge.className = "px-4 py-2 rounded-lg bg-blue-500/5 text-blue-400 border border-blue-500/20 flex items-center gap-3 font-mono text-xs";
+                        statusBadge.innerHTML = `<i class="ri-file-text-line"></i><span>GENERATING_REPORT_MATRIX...</span>`;
+                    }
+                }
+            },
+            (data) => {
                 isDone = true;
                 statusBadge.className = "px-4 py-2 rounded-lg bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 flex items-center gap-3 font-mono text-xs";
-                statusBadge.innerHTML = `<i class="ri-check-double-line"></i><span>ANALYSIS_RESTORED</span>`;
-            } else {
-                // Show Resume Button
-                statusBadge.className = "px-4 py-2 rounded-lg bg-orange-500/5 text-orange-400 border border-orange-500/20 flex items-center gap-3 font-mono text-xs cursor-pointer hover:bg-orange-500/10 transition-colors";
-                statusBadge.innerHTML = `<i class="ri-play-circle-line text-lg"></i><span>CONNECTION_INTERRUPTED_//_RESUME?</span>`;
-                statusBadge.onclick = () => {
-                    startStream(fullMarkdown);
-                    statusBadge.onclick = null; // Prevent double click
-                };
+                statusBadge.innerHTML = `<i class="ri-check-double-line"></i><span>ANALYSIS_COMPLETE</span>`;
+                renderBlueprints(fullMarkdown, true); // Final pass
+            },
+            (err) => {
+                console.error(err);
+                if (!isDone) {
+                    statusBadge.className = "px-4 py-2 rounded-lg bg-red-500/5 text-red-400 border border-red-500/20 flex items-center gap-3 font-mono text-xs";
+                    statusBadge.innerHTML = `<i class="ri-alarm-warning-line"></i><span>CONNECTION_LOST</span>`;
+                    app.toast('Stream interrupted', 'error');
+                }
             }
-        } else {
-            // Start fresh
-            startStream();
-        }
-
-        function startStream(existingText = '') {
-            statusBadge.className = "px-4 py-2 rounded-lg bg-yellow-500/5 text-yellow-500 border border-yellow-500/20 flex items-center gap-3 font-mono text-xs";
-            statusBadge.innerHTML = `
-                <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
-                </span>
-                <span>${existingText ? 'RESUMING_LINK...' : 'INITIALIZING_AGENT_SWARM...'}</span>
-            `;
-
-            API.streamResearch(
-                projectId,
-                (data) => {
-                    // Handle AI "thinking" tokens separately
-                    if (data.type === 'thinking') {
-                        thinkingText += data.content;
-                        thinkingLog.textContent = thinkingText;
-                        thinkingContainer.scrollTop = thinkingContainer.scrollHeight;
-
-                        // Update status badge with thinking visual
-                        if (statusBadge) {
-                            const thought = data.content.trim();
-                            if (thought) {
-                                statusBadge.innerHTML = `
-                                    <span class="relative flex h-2 w-2">
-                                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                                      <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
-                                    </span>
-                                    <span class="truncate max-w-[200px]">PROCESSING_NODE: ${thought.substring(0, 20).replace(/\n/g, '')}...</span>
-                                 `;
-                            }
-                        }
-                        return;
-                    }
-
-                    if (data.type === 'content') {
-                        fullMarkdown += data.content;
-
-                        // Render Markdown
-                        reportContent.innerHTML = marked.parse(fullMarkdown);
-
-                        // Attempt to extract and render blueprints
-                        renderBlueprints(fullMarkdown);
-                    }
-                    else if (data.type === 'phase') {
-                        if (data.content === 'analysis') {
-                            statusBadge.className = "px-4 py-2 rounded-lg bg-blue-500/5 text-blue-400 border border-blue-500/20 flex items-center gap-3 font-mono text-xs";
-                            statusBadge.innerHTML = `<i class="ri-file-text-line"></i><span>GENERATING_REPORT_MATRIX...</span>`;
-                        }
-                    }
-                },
-                (data) => {
-                    isDone = true;
-                    statusBadge.className = "px-4 py-2 rounded-lg bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 flex items-center gap-3 font-mono text-xs";
-                    statusBadge.innerHTML = `<i class="ri-check-double-line"></i><span>ANALYSIS_COMPLETE</span>`;
-                    renderBlueprints(fullMarkdown, true); // Final pass
-                },
-                (err) => {
-                    console.error(err);
-                    if (!isDone) {
-                        statusBadge.className = "px-4 py-2 rounded-lg bg-red-500/5 text-red-400 border border-red-500/20 flex items-center gap-3 font-mono text-xs cursor-pointer hover:bg-orange-500/10";
-                        statusBadge.innerHTML = `<i class="ri-error-warning-line"></i><span>STREAM_LOST_//_RETRY?</span>`;
-                        app.toast('Stream interrupted', 'error');
-                        statusBadge.onclick = () => {
-                            startStream(fullMarkdown);
-                            statusBadge.onclick = null;
-                        };
-                    }
-                },
-                existingText
-            );
-        }
+        );
 
         // Helper to extract blueprints
         function renderBlueprints(markdown, final = false) {

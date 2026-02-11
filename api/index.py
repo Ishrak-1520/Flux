@@ -13,7 +13,7 @@ import json
 from . import db, auth, ai_engine
 from .models import (
     RegisterRequest, LoginRequest, ProjectCreate, 
-    IdeationRequest, BlueprintSelect, DocType, ProjectUpdate, StreamRequest
+    IdeationRequest, BlueprintSelect, DocType, ProjectUpdate
 )
 
 app = FastAPI(title="Flux API", version="1.0.0")
@@ -116,50 +116,6 @@ async def update_project(project_id: int, req: ProjectUpdate, user_id: int = Dep
     return {"status": "updated", "id": project_id, "title": req.title}
 
 
-@app.post("/api/projects/{project_id}/research/stream")
-async def stream_research(project_id: int, req: StreamRequest, user_id: int = Depends(auth.get_current_user)):
-    project = await db.get_project(project_id, user_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    # The original stream_research_endpoint had logic to save to DB after streaming.
-    # This new implementation directly returns the EventSourceResponse from ai_engine.
-    # If saving to DB is still required, it needs to be integrated into ai_engine.stream_gap_analysis
-    # or handled by a separate background task/webhook.
-    # For now, faithfully implementing the provided snippet.
-    # Construct context string for research
-    project_context = ""
-    if project.get('category'):
-        project_context += f"Category: {project['category']}\n"
-    if project.get('subdomain'):
-        project_context += f"Subdomain: {project['subdomain']}\n"
-    if project.get('original_prompt'):
-        project_context += f"Idea: {project['original_prompt']}\n"
-
-    return EventSourceResponse(
-        ai_engine.stream_gap_analysis(
-            project_context=project_context,
-            existing_text=req.existing_text or ""
-        )
-    )
-
-
-@app.post("/api/projects/{project_id}/plan/stream/{doc_type}")
-async def stream_plan(project_id: int, doc_type: DocType, req: StreamRequest, user_id: int = Depends(auth.get_current_user)):
-    project = await db.get_project(project_id, user_id)
-    if not project:
-         raise HTTPException(status_code=404, detail="Project not found")
-    
-    # Context prompt should include project details
-    context = f"Project: {project['title']}\nCategory: {project.get('category')}\nDescription: {project['original_prompt']}"
-
-    # Similar to research stream, the original stream_doc_endpoint had DB saving logic.
-    # This new implementation directly returns the EventSourceResponse.
-    return EventSourceResponse(
-        ai_engine.stream_document(context, doc_type.value, existing_text=req.existing_text or "")
-    )
-
-
 @app.put("/api/projects/{project_id}/blueprint")
 async def select_blueprint(
     project_id: int, 
@@ -190,21 +146,15 @@ async def stream_research_endpoint(
     category = project["category"]
     subdomain = project["subdomain"]
 
+    # Combine context for new single-argument function
+    context = f"Idea: {prompt}\nCategory: {category}\nSubdomain: {subdomain}"
+
     async def event_generator():
         thinking_log = ""
         full_content = ""
         
-        # Construct context for legacy GET endpoint
-        project_context = ""
-        if category:
-            project_context += f"Category: {category}\n"
-        if subdomain:
-            project_context += f"Subdomain: {subdomain}\n"
-        if prompt:
-            project_context += f"Idea: {prompt}\n"
-
         try:
-            async for data in ai_engine.stream_gap_analysis(project_context, existing_text=""):
+            async for data in ai_engine.stream_gap_analysis(context):
                 if data["type"] == "thinking" and data.get("content"):
                     thinking_log += data["content"]
                 elif data["type"] == "content" and data.get("content"):

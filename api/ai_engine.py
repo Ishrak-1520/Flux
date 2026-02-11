@@ -1,6 +1,6 @@
 """
-Flux – AI Engine
-LongCat API client using the OpenAI SDK for gap analysis and document generation.
+Flux – AI Engine (Advanced Citation & Strict Formatting Version)
+Handles OpenAI/LongCat API calls with forced formatting for blueprints and reference lists.
 """
 
 import os
@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# --- CONFIGURATION ---
 client = AsyncOpenAI(
     api_key=os.getenv("LONGCAT_API_KEY", ""),
     base_url="https://api.longcat.chat/openai/v1"
@@ -18,159 +19,106 @@ client = AsyncOpenAI(
 MODEL_THINKING = "LongCat-Flash-Thinking"
 MODEL_CHAT = "LongCat-Flash-Chat"
 
+# ─── CITATION & FORMATTING PROTOCOLS ─────────────────────────
 
-# ─── System Prompts ──────────────────────────────────────────
+CITATION_PROTOCOL = """
+## References & Analysis Sources
+To ensure credibility, you MUST include this section at the end of the Gap Report (before the Blueprints).
+1. **User Context**: Cite specific constraints or ideas from the user's prompt.
+2. **Market Data (Simulated)**: Cite 2-3 real-world examples, papers, or documentation relevant to this topic.
+   - Format: `* **[Source Name]**: [Relevance/Insight]`
+"""
 
-GAP_ANALYSIS_SYSTEM = """You are Flux, an elite AI Project Architect. Your task is to perform deep market research and gap analysis.
+FORMATTING_REMINDER = """
+CRITICAL STRUCTURAL RULES:
+1. The document MUST start with `## Gap Report`.
+2. The `## References` section MUST come AFTER the Gap Report but BEFORE the Blueprints.
+3. You MUST output exactly 3 Blueprints.
+4. Each Blueprint MUST start with the exact header: `## Blueprint: [Project Name]`. 
+   - DO NOT use `### Blueprint` or `**Blueprint**`.
+   - The frontend parser relies on `## Blueprint:`.
+"""
 
-Given the user's idea or category, you must:
-1. Analyze the current landscape of existing solutions in this space.
-2. Identify 3-5 critical gaps or unmet needs in existing products.
-3. Produce a structured "Gap Report" in Markdown with clear headings.
-4. Then propose exactly 3 refined "Project Blueprints" that address the identified gaps.
+# ─── SYSTEM PROMPTS ──────────────────────────────────────────
 
-Each Blueprint must include:
-- **Title**: A catchy, memorable project name
-- **Tagline**: One-line elevator pitch
-- **Problem**: What specific gap it addresses
-- **Solution**: High-level approach
-- **Tech Stack**: Recommended technologies
-- **Unique Angle**: What makes this different from existing solutions
-- **Difficulty**: Easy / Medium / Hard
+GAP_ANALYSIS_SYSTEM = f"""You are Flux, an elite AI Project Architect.
+Your task is to perform deep market research and gap analysis.
 
-Format your entire response as valid Markdown. 
-Use `## Gap Report` for the report section.
-Use `## Blueprint: [Title]` for each of the three blueprints.
-**IMPORTANT**: Do NOT use level 3 headers (###) inside the Blueprints. Use bolding (**) for sections like **Problem**, **Solution**, etc.
+PROCESS:
+1. **Analyze**: detailed breakdown of the user's idea/industry.
+2. **Gaps**: Identify 3-5 critical market gaps.
+3. **References**: List sources as defined in the protocol.
+4. **Blueprints**: Propose 3 refined project ideas.
 
-CRITICAL: You must start each of the 3 blueprints with the exact header '## Blueprint: [Project Name]'. Do not use any other '##' headers in the response.
+{CITATION_PROTOCOL}
 
-CONSTRAINT: Do NOT use emojis or special unicode icons (like 🚀, ✅, 📝) anywhere in the document. Use standard Markdown formatting (lists, headers, bolding) only. Professional technical tone."""
+{FORMATTING_REMINDER}
 
-PRD_SYSTEM = """You are Flux, an AI document generator. Generate a comprehensive Product Requirements Document (PRD) in Markdown format.
+STRICT OUTPUT CONSTRAINTS:
+- Use standard Markdown.
+- NO EMOJIS (Safe Mode).
+- Professional tone.
+"""
 
-Include these sections:
-1. Executive Summary
-2. Problem Statement
-3. Goals & Objectives
-4. Target Users / Personas
-5. Functional Requirements (numbered, detailed)
-6. Non-Functional Requirements (performance, security, scalability)
-7. User Stories (As a..., I want..., So that...)
-8. Success Metrics / KPIs
-9. Technical Constraints
-10. Timeline & Milestones
-
-Be thorough, professional, and specific. Use tables where appropriate.
-
-CONSTRAINT: Do NOT use emojis or special unicode icons (like 🚀, ✅, 📝) anywhere in the document. Use standard Markdown formatting (lists, headers, bolding) only. Professional technical tone."""
-
-SRS_SYSTEM = """You are Flux, an AI document generator. Generate a comprehensive Software Requirements Specification (SRS) in Markdown format following IEEE 830 standards.
-
-Include these sections:
-1. Introduction (Purpose, Scope, Definitions)
-2. Overall Description (Product Perspective, Functions, User Characteristics, Constraints)
-3. System Features (detailed with stimulus/response, functional requirements)
-4. External Interface Requirements (User, Hardware, Software, Communication)
-5. Non-Functional Requirements (Performance, Safety, Security, Quality)
-6. Data Model / Database Design
-7. API Specifications
-8. Appendices
-
-Be technically rigorous and comprehensive. Use tables and diagrams descriptions where helpful.
-
-CONSTRAINT: Do NOT use emojis or special unicode icons (like 🚀, ✅, 📝) anywhere in the document. Use standard Markdown formatting (lists, headers, bolding) only. Professional technical tone."""
-
-CURSORRULES_SYSTEM = """You are Flux, an AI context file generator. Generate a .cursorrules file (JSON format) that captures the project's technical "soul" for use in AI-native IDEs like Cursor or Windsurf.
-
-The file should include:
-{
-  "project_name": "...",
-  "description": "...",
-  "tech_stack": { "frontend": "...", "backend": "...", "database": "...", "deployment": "..." },
-  "architecture": "...",
-  "coding_conventions": {
-    "style": "...",
-    "naming": "...",
-    "file_structure": "..."
-  },
-  "key_patterns": ["..."],
-  "dependencies": ["..."],
-  "environment_variables": ["..."],
-  "api_design": "...",
-  "testing_strategy": "...",
-  "deployment_notes": "...",
-  "important_context": "..."
-}
-
-Return ONLY valid JSON, no markdown wrapping.
-
-CONSTRAINT: Do NOT use emojis or special unicode icons (like 🚀, ✅, 📝) anywhere in the document. Use standard Markdown formatting (lists, headers, bolding) only. Professional technical tone."""
-
-ROADMAP_SYSTEM = """You are Flux, an AI implementation planner. Generate a detailed step-by-step implementation roadmap in Markdown.
-
-For each step include:
-1. **Step Title** with a clear objective
-2. **Description**: What needs to be done
-3. **Deliverables**: Concrete outputs
-4. **Vibe-Coding Prompt**: A detailed prompt that a developer can paste into an AI coding assistant (Cursor, Windsurf, etc.) to implement this step. The prompt should be self-contained and specific.
-
-Organize steps in logical dependency order. Group into phases (Setup, Core, Features, Polish, Deploy).
-Use checkboxes (- [ ]) for each step so users can track progress.
-
-CONSTRAINT: Do NOT use emojis or special unicode icons (like 🚀, ✅, 📝) anywhere in the document. Use standard Markdown formatting (lists, headers, bolding) only. Professional technical tone."""
+PRD_SYSTEM = f"You are an expert Product Manager. Write a detailed PRD. {CITATION_PROTOCOL} NO EMOJIS."
+SRS_SYSTEM = f"You are a Senior Architect. Write a Technical System Spec. {CITATION_PROTOCOL} NO EMOJIS."
+ROADMAP_SYSTEM = f"You are a Project Lead. Write a step-by-step implementation plan. {CITATION_PROTOCOL} NO EMOJIS."
+CURSORRULES_SYSTEM = f"You are a Senior Dev. Write a .cursorrules file. {CITATION_PROTOCOL} NO EMOJIS."
 
 
-# ─── Streaming Generators ────────────────────────────────────
+# ─── GENERATORS (CRASH-PROOF) ────────────────────────────────
 
 async def stream_gap_analysis(project_context: str, existing_text: str = ""):
-    """Run gap analysis with the thinking model. Yields SSE-formatted chunks."""
-    
-    # Continuation Logic
-    if existing_text and len(existing_text) > 10:
-         messages = [
-            {"role": "system", "content": "You are completing a document. RESUME EXACTLY where the following text left off. Do not repeat the existing text."},
-            {"role": "user", "content": f"EXISTING TEXT:\n{existing_text}\n\n[RESUME FROM HERE]"}
-        ]
-    else:
-        # Standard Mode
-        if not project_context.strip():
-            project_context = "Suggest innovative project ideas across emerging technology domains."
-
-        messages = [
-            {"role": "system", "content": GAP_ANALYSIS_SYSTEM},
-            {"role": "user", "content": project_context}
-        ]
-
-    print(f"DEBUG: API Key present: {bool(client.api_key)}")
-    print(f"DEBUG: Continuation Mode: {bool(existing_text)}")
-
+    """Streams gap analysis with Citations and Strict Blueprint Formatting."""
     try:
+        # 1. Input Sanitization
+        ctx = str(project_context) if project_context else "New Idea"
+        hist = str(existing_text) if existing_text else ""
+        
+        # 2. Build Messages with Reinforced Instructions
+        messages = []
+        if len(hist) > 10:
+            messages = [
+                {"role": "system", "content": "You are continuing a document. RESUME EXACTLY where the text ends."},
+                {"role": "user", "content": f"EXISTING TEXT:\n{hist}\n\n[RESUME GENERATION]"}
+            ]
+        else:
+            # We append the formatting reminder to the USER prompt too, 
+            # because thinking models sometimes ignore system prompts for formatting.
+            reinforced_user_prompt = f"""Topic: {ctx}
+
+INSTRUCTIONS:
+1. Write a Market Gap Analysis.
+2. Add a 'References' section.
+3. Write 3 Blueprints.
+
+IMPORTANT: Start each blueprint with '## Blueprint: Name'. Do not use '###'.
+"""
+            messages = [
+                {"role": "system", "content": GAP_ANALYSIS_SYSTEM},
+                {"role": "user", "content": reinforced_user_prompt}
+            ]
+
+        # 3. Start Stream
         stream = await client.chat.completions.create(
             model=MODEL_THINKING,
             messages=messages,
             stream=True,
-            max_tokens=8192,
-            extra_body={
-                "enable_thinking": True,
-                "thinking_budget": 1024
-            }
+            max_tokens=4096
         )
 
+        # 4. Stream Loop
         thinking_buffer = ""
         content_buffer = ""
         current_phase = "thinking"
 
         async for chunk in stream:
-            if not chunk.choices:
-                continue
-            delta = chunk.choices[0].delta
+            if not chunk.choices: continue
             
-            # Check attributes safely
-            reasoning = getattr(delta, "reasoning_content", None) or getattr(delta, "thought", None) or getattr(delta, "reasoning", None)
+            delta = chunk.choices[0].delta
+            reasoning = getattr(delta, "reasoning_content", None) or getattr(delta, "thought", None)
             content = delta.content
 
-            # Handle thinking content
             if reasoning:
                 thinking_buffer += str(reasoning)
                 yield {'type': 'thinking', 'content': str(reasoning)}
@@ -178,58 +126,55 @@ async def stream_gap_analysis(project_context: str, existing_text: str = ""):
                 if current_phase == "thinking":
                     current_phase = "content"
                     yield {'type': 'phase', 'content': 'analysis'}
-                content_buffer += content
-                yield {'type': 'content', 'content': content}
-        
-        yield {'type': 'done', 'thinking_length': len(thinking_buffer), 'content_length': len(content_buffer)}
+                content_buffer += str(content)
+                yield {'type': 'content', 'content': str(content)}
+
+        yield {'type': 'done', 'content_length': len(content_buffer)}
 
     except Exception as e:
-        print(f"CRITICAL STREAM ERROR: {str(e)}")
-        yield {'type': 'error', 'content': f"Backend Crash: {str(e)}"}
+        # Silent error log
+        try: print(f"AI Error: {e}") 
+        except: pass
+        yield {'type': 'error', 'content': f"AI Error: {str(e)}"}
 
 
 async def stream_document(project_context: str, doc_type: str, existing_text: str = ""):
-    """Generate a document (PRD, SRS, roadmap, cursorrules). Yields SSE-formatted chunks."""
-    
-    if existing_text and len(existing_text) > 10:
-        messages = [
-            {"role": "system", "content": "You are completing a document. RESUME EXACTLY where the following text left off. Do not repeat the existing text."},
-            {"role": "user", "content": f"EXISTING TEXT:\n{existing_text}\n\n[RESUME FROM HERE]"}
-        ]
-    else: 
-        system_prompts = {
-            "prd": PRD_SYSTEM,
-            "srs": SRS_SYSTEM,
-            "cursorrules": CURSORRULES_SYSTEM,
-            "roadmap": ROADMAP_SYSTEM
-        }
-        system_prompt = system_prompts.get(doc_type, PRD_SYSTEM)
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": project_context}
-        ]
-
+    """Streams document generation with Citations."""
     try:
+        ctx = str(project_context) if project_context else ""
+        hist = str(existing_text) if existing_text else ""
+
+        prompts = {
+            "prd": PRD_SYSTEM,
+            "srs": SRS_SYSTEM, 
+            "roadmap": ROADMAP_SYSTEM,
+            "cursorrules": CURSORRULES_SYSTEM
+        }
+        sys_prompt = prompts.get(doc_type, PRD_SYSTEM)
+
+        messages = []
+        if len(hist) > 10:
+            messages = [
+                {"role": "system", "content": f"You are continuing a {doc_type}. RESUME EXACTLY where the text ends."},
+                {"role": "user", "content": f"EXISTING TEXT:\n{hist}\n\n[RESUME]"}
+            ]
+        else:
+            messages = [
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": ctx}
+            ]
+
         stream = await client.chat.completions.create(
             model=MODEL_CHAT,
             messages=messages,
-            stream=True,
-            max_tokens=8192
+            stream=True
         )
 
-        full_content = ""
         async for chunk in stream:
-            if not chunk.choices:
-                continue
-            delta = chunk.choices[0].delta
-            if delta.content:
-                full_content += delta.content
-                yield {'type': 'content', 'content': delta.content}
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield {'type': 'content', 'content': chunk.choices[0].delta.content}
 
-        yield {'type': 'done', 'content_length': len(full_content)}
-    
+        yield {'type': 'done', 'content_length': 0}
+
     except Exception as e:
-        print(f"Doc Stream Error: {str(e)}")
         yield {'type': 'error', 'content': str(e)}
-
