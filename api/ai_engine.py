@@ -123,77 +123,54 @@ CONSTRAINT: Do NOT use emojis or special unicode icons (like 🚀, ✅, 📝) an
 
 # ─── Streaming Generators ────────────────────────────────────
 
-async def stream_gap_analysis(prompt: str, category: str = None, subdomain: str = None, existing_text: str = None):
+async def stream_gap_analysis(project_context: str, existing_text: str = ""):
     """Run gap analysis with the thinking model. Yields SSE-formatted chunks."""
     
-    if existing_text:
-        # Continuation Mode
-        messages = [
-            {"role": "system", "content": "You are completing a document that was interrupted. Here is the text generated so far:\n\n" + existing_text[-2000:] + "\n\nCONTINUE GENERATING EXACTLY WHERE THIS LEFT OFF. DO NOT REPEAT THE EXISTING TEXT."}
+    # Continuation Logic
+    if existing_text and len(existing_text) > 10:
+         messages = [
+            {"role": "system", "content": "You are completing a document. RESUME EXACTLY where the following text left off. Do not repeat the existing text."},
+            {"role": "user", "content": f"EXISTING TEXT:\n{existing_text}\n\n[RESUME FROM HERE]"}
         ]
     else:
         # Standard Mode
-        user_message = ""
-        if category:
-            user_message += f"Category: {category}\n"
-            if subdomain:
-                user_message += f"Subdomain: {subdomain}\n"
-        if prompt:
-            user_message += f"Idea: {prompt}\n"
-
-        if not user_message.strip():
-            user_message = "Suggest innovative project ideas across emerging technology domains."
+        if not project_context.strip():
+            project_context = "Suggest innovative project ideas across emerging technology domains."
 
         messages = [
             {"role": "system", "content": GAP_ANALYSIS_SYSTEM},
-            {"role": "user", "content": user_message}
+            {"role": "user", "content": project_context}
         ]
 
     print(f"DEBUG: API Key present: {bool(client.api_key)}")
     print(f"DEBUG: Continuation Mode: {bool(existing_text)}")
 
-    stream = await client.chat.completions.create(
-        model=MODEL_THINKING,
-        messages=messages,
-        stream=True,
-        max_tokens=8192,
-        extra_body={
-            "enable_thinking": True,
-            "thinking_budget": 1024
-        }
-    )
-
-    thinking_buffer = ""
-    content_buffer = ""
-    current_phase = "thinking"
-
     try:
-        with open("debug_log.txt", "a", encoding="utf-8") as f:
-            f.write(f"\n\n--- Start Stream ---\nPrompt len: {len(prompt or '')}\n")
-    except Exception as log_err:
-        print(f"Logging failed (ignoring): {log_err}")
+        stream = await client.chat.completions.create(
+            model=MODEL_THINKING,
+            messages=messages,
+            stream=True,
+            max_tokens=8192,
+            extra_body={
+                "enable_thinking": True,
+                "thinking_budget": 1024
+            }
+        )
 
-    print(f"DEBUG: Starting stream_gap_analysis. Prompt len: {len(prompt or '')}")
-    
-    try:
+        thinking_buffer = ""
+        content_buffer = ""
+        current_phase = "thinking"
+
         async for chunk in stream:
-            # print(f"DEBUG: Chunk received: {chunk}")
             if not chunk.choices:
-                print("DEBUG: No choices in chunk")
                 continue
             delta = chunk.choices[0].delta
             
-            # Check attributes safely - handle multiple naming conventions for reasoning
+            # Check attributes safely
             reasoning = getattr(delta, "reasoning_content", None) or getattr(delta, "thought", None) or getattr(delta, "reasoning", None)
             content = delta.content
 
-            try:
-                with open("debug_log.txt", "a", encoding="utf-8") as f:
-                     f.write(f"R: {bool(reasoning)}, C: {bool(content)} | R_val: {str(reasoning)[:10] if reasoning else ''} | C_val: {str(content)[:10] if content else ''}\n")
-            except Exception as log_err:
-                print(f"Logging failed (ignoring): {log_err}")
-
-            # Handle thinking content if present
+            # Handle thinking content
             if reasoning:
                 thinking_buffer += str(reasoning)
                 yield {'type': 'thinking', 'content': str(reasoning)}
@@ -203,21 +180,21 @@ async def stream_gap_analysis(prompt: str, category: str = None, subdomain: str 
                     yield {'type': 'phase', 'content': 'analysis'}
                 content_buffer += content
                 yield {'type': 'content', 'content': content}
+        
+        yield {'type': 'done', 'thinking_length': len(thinking_buffer), 'content_length': len(content_buffer)}
 
     except Exception as e:
         print(f"CRITICAL STREAM ERROR: {str(e)}")
         yield {'type': 'error', 'content': f"Backend Crash: {str(e)}"}
-    
-    print(f"DEBUG: Stream finished. Thinking: {len(thinking_buffer)}, Content: {len(content_buffer)}")
-    yield {'type': 'done', 'thinking_length': len(thinking_buffer), 'content_length': len(content_buffer)}
 
 
-async def stream_document(project_context: str, doc_type: str, existing_text: str = None):
+async def stream_document(project_context: str, doc_type: str, existing_text: str = ""):
     """Generate a document (PRD, SRS, roadmap, cursorrules). Yields SSE-formatted chunks."""
     
-    if existing_text:
+    if existing_text and len(existing_text) > 10:
         messages = [
-            {"role": "system", "content": "You are completing a document that was interrupted. Here is the text generated so far:\n\n" + existing_text[-2000:] + "\n\nCONTINUE GENERATING EXACTLY WHERE THIS LEFT OFF. DO NOT REPEAT THE EXISTING TEXT."}
+            {"role": "system", "content": "You are completing a document. RESUME EXACTLY where the following text left off. Do not repeat the existing text."},
+            {"role": "user", "content": f"EXISTING TEXT:\n{existing_text}\n\n[RESUME FROM HERE]"}
         ]
     else: 
         system_prompts = {
@@ -233,21 +210,26 @@ async def stream_document(project_context: str, doc_type: str, existing_text: st
             {"role": "user", "content": project_context}
         ]
 
-    stream = await client.chat.completions.create(
-        model=MODEL_CHAT,
-        messages=messages,
-        stream=True,
-        max_tokens=8192
-    )
+    try:
+        stream = await client.chat.completions.create(
+            model=MODEL_CHAT,
+            messages=messages,
+            stream=True,
+            max_tokens=8192
+        )
 
-    full_content = ""
-    async for chunk in stream:
-        if not chunk.choices:
-            continue
-        delta = chunk.choices[0].delta
-        if delta.content:
-            full_content += delta.content
-            yield {'type': 'content', 'content': delta.content}
+        full_content = ""
+        async for chunk in stream:
+            if not chunk.choices:
+                continue
+            delta = chunk.choices[0].delta
+            if delta.content:
+                full_content += delta.content
+                yield {'type': 'content', 'content': delta.content}
 
-    yield {'type': 'done', 'content_length': len(full_content)}
+        yield {'type': 'done', 'content_length': len(full_content)}
+    
+    except Exception as e:
+        print(f"Doc Stream Error: {str(e)}")
+        yield {'type': 'error', 'content': str(e)}
 

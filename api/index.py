@@ -127,12 +127,19 @@ async def stream_research(project_id: int, req: StreamRequest, user_id: int = De
     # If saving to DB is still required, it needs to be integrated into ai_engine.stream_gap_analysis
     # or handled by a separate background task/webhook.
     # For now, faithfully implementing the provided snippet.
+    # Construct context string for research
+    project_context = ""
+    if project.get('category'):
+        project_context += f"Category: {project['category']}\n"
+    if project.get('subdomain'):
+        project_context += f"Subdomain: {project['subdomain']}\n"
+    if project.get('original_prompt'):
+        project_context += f"Idea: {project['original_prompt']}\n"
+
     return EventSourceResponse(
         ai_engine.stream_gap_analysis(
-            prompt=project['original_prompt'],
-            category=project.get('category'),
-            subdomain=project.get('subdomain'),
-            existing_text=req.existing_text
+            project_context=project_context,
+            existing_text=req.existing_text or ""
         )
     )
 
@@ -149,7 +156,7 @@ async def stream_plan(project_id: int, doc_type: DocType, req: StreamRequest, us
     # Similar to research stream, the original stream_doc_endpoint had DB saving logic.
     # This new implementation directly returns the EventSourceResponse.
     return EventSourceResponse(
-        ai_engine.stream_document(context, doc_type.value, existing_text=req.existing_text)
+        ai_engine.stream_document(context, doc_type.value, existing_text=req.existing_text or "")
     )
 
 
@@ -187,8 +194,17 @@ async def stream_research_endpoint(
         thinking_log = ""
         full_content = ""
         
+        # Construct context for legacy GET endpoint
+        project_context = ""
+        if category:
+            project_context += f"Category: {category}\n"
+        if subdomain:
+            project_context += f"Subdomain: {subdomain}\n"
+        if prompt:
+            project_context += f"Idea: {prompt}\n"
+
         try:
-            async for data in ai_engine.stream_gap_analysis(prompt, category, subdomain):
+            async for data in ai_engine.stream_gap_analysis(project_context, existing_text=""):
                 if data["type"] == "thinking" and data.get("content"):
                     thinking_log += data["content"]
                 elif data["type"] == "content" and data.get("content"):
