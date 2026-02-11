@@ -43,9 +43,16 @@ const renderCard = (project) => {
             
             <!-- Content -->
             <div class="relative z-10 mb-6">
-                <h3 class="text-xl font-bold text-white mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 transition-all">
-                    ${project.title}
-                </h3>
+                <!-- Title & Edit Container -->
+                <div class="flex items-center justify-between mb-2 group/title">
+                    <h3 class="text-xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 transition-all truncate pr-2 project-title">
+                        ${project.title}
+                    </h3>
+                     <button class="edit-btn opacity-0 group-hover/title:opacity-100 text-gray-500 hover:text-white transition-opacity p-1" title="Rename">
+                        <i class="ri-edit-2-line"></i>
+                    </button>
+                </div>
+                
                 <p class="text-sm text-gray-500 line-clamp-2 h-10 group-hover:text-gray-400">
                     ${project.original_prompt || 'No description provided.'}
                 </p>
@@ -61,7 +68,7 @@ const renderCard = (project) => {
             </div>
 
             <!-- Hover Overlay Actions -->
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 z-20 translate-y-4 group-hover:translate-y-0">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 z-20 translate-y-4 group-hover:translate-y-0 action-overlay">
                 <button class="open-btn px-6 py-2 bg-white text-black rounded-full text-sm font-bold hover:scale-105 transition-transform">
                     Open Project
                 </button>
@@ -73,7 +80,6 @@ const renderCard = (project) => {
     `;
 
     // Click handler (Main Card)
-    // We bind the click to the "Open" button essentially, or the whole card but ignore delete
     const openAction = () => {
         let route = `/project/${project.id}/ideation`; // default
         if (project.status === 'research') route = `/project/${project.id}/research`;
@@ -82,16 +88,64 @@ const renderCard = (project) => {
     };
 
     div.querySelector('.open-btn').addEventListener('click', (e) => {
-        e.stopPropagation(); // prevent double triggering if card has listener
+        e.stopPropagation();
         openAction();
     });
 
-    // Main tap area also works but we should handle delete button separation
     div.addEventListener('click', (e) => {
-        if (!e.target.closest('button')) {
+        // Ignore if clicking buttons or inputs
+        if (!e.target.closest('button') && !e.target.closest('input')) {
             openAction();
         }
     });
+
+    // Rename Logic
+    const editBtn = div.querySelector('.edit-btn');
+    const titleEl = div.querySelector('.project-title');
+    const titleContainer = titleEl.parentElement;
+
+    editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Swap to input
+        const currentTitle = titleEl.textContent.trim();
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentTitle;
+        input.className = "w-full bg-slate-900 text-white border border-flux-500 rounded px-2 py-1 text-sm focus:outline-none z-30 relative";
+
+        // Hide title and button, show input
+        titleEl.style.display = 'none';
+        editBtn.style.display = 'none';
+        titleContainer.insertBefore(input, titleEl);
+        input.focus();
+
+        // Save on blur or enter
+        const save = async () => {
+            const newTitle = input.value.trim();
+            if (newTitle && newTitle !== currentTitle) {
+                try {
+                    await API.updateProjectTitle(project.id, newTitle);
+                    titleEl.textContent = newTitle;
+                    app.toast('Project renamed', 'success');
+                } catch (err) {
+                    app.toast(err.message, 'error');
+                }
+            }
+            // Cleanup
+            input.remove();
+            titleEl.style.display = '';
+            editBtn.style.display = '';
+        };
+
+        input.addEventListener('blur', save);
+        input.addEventListener('click', (ev) => ev.stopPropagation()); // Prevent card click
+        input.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter') {
+                input.blur();
+            }
+        });
+    });
+
 
     // Delete handler
     div.querySelector('.delete-btn').addEventListener('click', async (e) => {

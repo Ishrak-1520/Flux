@@ -108,11 +108,20 @@ async def get_project(project_id: int, user_id: int):
     )
 
 
+
 async def update_project_status(project_id: int, status: str):
     await execute(
         "UPDATE projects SET status = %s WHERE id = %s",
         (status, project_id)
     )
+
+
+async def update_project_title(project_id: int, title: str):
+    await execute(
+        "UPDATE projects SET title = %s WHERE id = %s",
+        (title, project_id)
+    )
+
 
 
 async def update_project_blueprint(project_id: int, blueprint_index: int):

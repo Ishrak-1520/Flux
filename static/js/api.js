@@ -135,12 +135,21 @@ export const API = {
         });
     },
 
+
     async selectBlueprint(projectId, blueprintIndex) {
         return await this.request(`/projects/${projectId}/blueprint`, {
             method: 'PUT',
             body: JSON.stringify({ blueprint_index: blueprintIndex })
         });
     },
+
+    async updateProjectTitle(projectId, title) {
+        return await this.request(`/projects/${projectId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ title })
+        });
+    },
+
 
     /**
      * SSE Streaming Helper

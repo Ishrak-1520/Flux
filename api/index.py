@@ -109,6 +109,15 @@ async def delete_project(project_id: int, user_id: int = Depends(auth.get_curren
     await db.delete_project(project_id, user_id)
     return {"status": "deleted"}
 
+class ProjectUpdate(BaseModel):
+    title: str
+
+@app.patch("/api/projects/{project_id}")
+async def update_project(project_id: int, req: ProjectUpdate, user_id: int = Depends(auth.get_current_user)):
+    await db.update_project_title(project_id, req.title)
+    return {"status": "updated", "id": project_id, "title": req.title}
+
+
 @app.put("/api/projects/{project_id}/blueprint")
 async def select_blueprint(
     project_id: int, 
