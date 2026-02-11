@@ -13,6 +13,24 @@ export default {
 
         // 2. Define Global Handlers (The Fix)
         let currentScaffold = null;
+        let activeContext = "Full Stack App"; // Default
+
+        // Check for Blueprint Bridge
+        const pendingBlueprint = localStorage.getItem('forge_blueprint');
+        if (pendingBlueprint) {
+            try {
+                const blueprint = JSON.parse(pendingBlueprint);
+                console.log("✅ Blueprint Detected:", blueprint);
+                activeContext = blueprint;
+
+                // We'll update the UI in renderHTML or here if possible, 
+                // but since container.innerHTML is set later, we wait or set a flag.
+                // Actually, we can just inject it into the initial HTML state or update after render.
+            } catch (e) {
+                console.error("Blueprint parse error", e);
+            }
+            localStorage.removeItem('forge_blueprint');
+        }
 
         window.triggerScaffold = async function () {
             console.log("⚡ Triggering Scaffold Sequence...");
@@ -36,7 +54,7 @@ export default {
                         // If token exists, send it. If not, don't send header (since we disabled auth on backend)
                         ...(token ? { 'Authorization': 'Bearer ' + token } : {})
                     },
-                    body: JSON.stringify({ context: "Full Stack App" })
+                    body: JSON.stringify({ context: activeContext })
                 });
 
                 if (!response.ok) {
@@ -148,5 +166,13 @@ export default {
                 </div>
             </div>
         `;
+
+        // Update UI if bridge active
+        if (typeof activeContext === 'object') {
+            const statusEl = document.getElementById('current-file');
+            if (statusEl) {
+                statusEl.innerHTML = `< span class="text-green-400 flex items-center gap-2" > <i class="ri-link"></i> Linked to Plan: ${activeContext.project_name || 'Custom Architecture'}</span > `;
+            }
+        }
     }
 };

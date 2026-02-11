@@ -19,6 +19,21 @@ export default {
             return;
         }
 
+        // --- Data Prep for Bridge ---
+        try {
+            if (project.research && project.research.blueprints_json) {
+                const blueprints = JSON.parse(project.research.blueprints_json);
+                const selectedIdx = project.selected_blueprint || 0;
+                window.currentBlueprints = blueprints[selectedIdx] || blueprints[0];
+                // Augment with project title context
+                if (window.currentBlueprints) {
+                    window.currentBlueprints.project_name = project.title;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to parse blueprints for bridge", e);
+        }
+
         container.innerHTML = `
             <div class="h-[calc(100vh-80px)] flex flex-col md:flex-row max-w-[1920px] mx-auto">
                 <!-- Sidebar -->
@@ -50,10 +65,12 @@ export default {
                         </button>
                     </nav>
 
+
+
                     <div class="p-4 border-t border-white/5 space-y-2">
-                        <a href="#/project/${projectId}/forge" class="flex items-center justify-center gap-2 w-full py-2 bg-gradient-to-r from-purple-600 to-flux-500 hover:from-purple-500 hover:to-flux-400 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-purple-900/20">
-                            <i class="ri-hammer-line"></i> Open Forge
-                        </a>
+                        <button id="btn-build-arch" class="flex items-center justify-center gap-2 w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-green-900/20">
+                            <i class="ri-hammer-line"></i> Build This Architecture
+                        </button>
                          <a href="#/project/${projectId}/export" class="flex items-center justify-center gap-2 w-full py-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg text-xs font-medium transition-colors border border-white/5">
                             <i class="ri-download-cloud-line"></i> Export Assets
                         </a>
@@ -172,6 +189,24 @@ export default {
             });
         });
         // --- End of Task 3 Rename Logic ---
+
+
+        // --- Build Architecture Bridge ---
+        const btnBuild = container.querySelector('#btn-build-arch');
+        if (btnBuild) {
+            btnBuild.addEventListener('click', () => {
+                if (!window.currentBlueprints) {
+                    app.toast("No blueprint data available. Please regenerate research.", "warning");
+                    // Fallback redirect
+                    window.location.hash = `#/project/${projectId}/forge`;
+                    return;
+                }
+
+                console.log("🚀 Bridging to Forge...", window.currentBlueprints);
+                localStorage.setItem('forge_blueprint', JSON.stringify(window.currentBlueprints));
+                window.location.hash = `#/project/${projectId}/forge`;
+            });
+        }
 
 
         // Start Stream

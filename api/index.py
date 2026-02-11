@@ -240,9 +240,38 @@ async def stream_doc_endpoint(
 async def create_scaffold(project_id: int, request: Request, user_id: int = Depends(auth.get_current_user)):
     try:
         data = await request.json()
-        context = data.get('context', 'Generic Web App')
+        raw_context = data.get('context')
         
-        json_str = await ai_engine.generate_scaffold_json(context)
+        prompt = ""
+        # PROMPT ENGINEERING: Handle Dict vs String
+        if isinstance(raw_context, dict):
+            # It's a full blueprint!
+            print(f"🏗️ Building from Blueprint: {raw_context.keys()}")
+            
+            # Construct a high-fidelity prompt
+            tech_stack = json.dumps(raw_context.get('tech_stack', []))
+            db_schema = json.dumps(raw_context.get('database_schema', []))
+            routes = json.dumps(raw_context.get('api_routes', []))
+            
+            prompt = f"""
+            Generate a project scaffold strictly following this architecture:
+            
+            1. PROJECT NAME: {raw_context.get('project_name', 'flux-app')}
+            2. TECH STACK: {tech_stack}
+            3. DATABASE: {db_schema}
+            4. API ROUTES: {routes}
+            
+            CRITICAL:
+            - Create the exact folder structure for this stack.
+            - Include a README.md explaining the architecture.
+            - Generate the `requirements.txt` or `package.json` matching the Tech Stack exactly.
+            - Ensure the 'root_directory' in JSON is '{raw_context.get('project_name', 'flux-app')}'.
+            """
+        else:
+            # Fallback for manual string input
+            prompt = str(raw_context or "Generic Web App")
+
+        json_str = await ai_engine.generate_scaffold_json(prompt)
         return json.loads(json_str)
     except Exception as e:
         print(f"Scaffold Generation Error: {e}")
