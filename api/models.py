@@ -1,0 +1,55 @@
+"""
+Flux – Pydantic Models
+Request/Response schemas for API validation.
+"""
+
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, List
+from enum import Enum
+
+
+# ─── Auth ────────────────────────────────────────────────────
+
+class RegisterRequest(BaseModel):
+    email: str = Field(..., min_length=5, max_length=255)
+    password: str = Field(..., min_length=6, max_length=128)
+    display_name: str = Field(..., min_length=1, max_length=100)
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class TokenResponse(BaseModel):
+    token: str
+    user: dict
+
+
+# ─── Projects ────────────────────────────────────────────────
+
+class ProjectCreate(BaseModel):
+    title: Optional[str] = Field(default="New Project", min_length=1, max_length=255)
+    category: Optional[str] = None
+    subdomain: Optional[str] = None
+    original_prompt: Optional[str] = None
+    entry_mode: str = Field(default="freestyle")  # "freestyle" or "guided"
+
+
+class BlueprintSelect(BaseModel):
+    blueprint_index: int = Field(..., ge=0, le=2)
+
+
+# ─── AI / Research ────────────────────────────────────────────
+
+class IdeationRequest(BaseModel):
+    prompt: Optional[str] = None
+    category: Optional[str] = None
+    subdomain: Optional[str] = None
+
+
+class DocType(str, Enum):
+    prd = "prd"
+    srs = "srs"
+    cursorrules = "cursorrules"
+    roadmap = "roadmap"

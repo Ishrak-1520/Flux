@@ -1,0 +1,7 @@
+/.env
+/debug_log.txt
+/PRD.md
+/project_status_report.md
+/schema.sql
+/test_ai.py
+/test_jwt.py
