@@ -10,6 +10,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from sse_starlette.sse import EventSourceResponse
 import os
 import json
+from pydantic import BaseModel
+from typing import Optional
 
 from . import db, auth, ai_engine
 from .models import (
@@ -248,7 +250,20 @@ async def create_scaffold(project_id: int, request: Request, user_id: int = Depe
 
 
 
-# ─── SPA Fallback ─────────────────────────────────────────────
+
+class RefineRequest(BaseModel):
+    selection: str
+    instruction: str
+    context: Optional[str] = ""
+
+@app.post("/api/refine")
+async def refine_endpoint(req: RefineRequest, user_id: int = Depends(auth.get_current_user)):
+    try:
+        refined_text = await ai_engine.refine_text(req.selection, req.instruction, req.context)
+        return {"refined_text": refined_text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.exception_handler(404)
 async def spa_fallback(request: Request, exc: Exception):

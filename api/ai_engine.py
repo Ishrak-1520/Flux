@@ -95,6 +95,9 @@ CRITICAL RULES:
 
 # ─── GENERATORS (CRASH-PROOF) ────────────────────────────────
 
+
+from api.agent_search import perform_market_research
+
 async def stream_gap_analysis(project_context: str, existing_text: str = ""):
     """Streams gap analysis with Citations and Strict Blueprint Formatting."""
     try:
@@ -102,7 +105,12 @@ async def stream_gap_analysis(project_context: str, existing_text: str = ""):
         ctx = str(project_context) if project_context else "New Idea"
         hist = str(existing_text) if existing_text else ""
         
-        # 2. Build Messages with Reinforced Instructions
+        # 2. Run Agentic Search (Only if starting new)
+        real_world_data = ""
+        if not hist:
+            real_world_data = await perform_market_research(ctx)
+        
+        # 3. Build Messages with Reinforced Instructions
         messages = []
         if len(hist) > 10:
             messages = [
@@ -118,8 +126,18 @@ INSTRUCTIONS:
 1. Write a Market Gap Analysis.
 2. Add a 'References' section.
 """
+            
+            # Inject Research into System Prompt
+            system_prompt_with_research = GAP_ANALYSIS_SYSTEM + f"""
+            
+CRITICAL INSTRUCTION:
+Use the following REAL-TIME RESEARCH to ground your analysis. 
+Do not hallucinate competitors. Use the provided links and names.
+
+{real_world_data}
+"""
             messages = [
-                {"role": "system", "content": GAP_ANALYSIS_SYSTEM},
+                {"role": "system", "content": system_prompt_with_research},
                 {"role": "user", "content": reinforced_user_prompt}
             ]
 
@@ -234,7 +252,19 @@ async def stream_document(project_context: str, doc_type: str, existing_text: st
 
 SCAFFOLD_SYSTEM = """You are a Senior DevOps Engineer. 
 Generate a robust project scaffold based on the user's Blueprint.
-OUTPUT STRICT JSON ONLY matching the ScaffoldResponse schema.
+OUTPUT STRICT JSON ONLY matching this exact schema:
+
+{
+  "root_directory": "project-name",
+  "files": [
+    {
+      "path": "src/main.py",
+      "content": "print('Hello World')",
+      "language": "python"
+    }
+  ],
+  "commands": ["pip install -r requirements.txt"]
+}
 
 RULES:
 1. **Structure**: specific to the tech stack (e.g., React = /src, /public; Python = /app, requirements.txt).
@@ -261,3 +291,27 @@ async def generate_scaffold_json(context: str):
         return completion.choices[0].message.content
     except Exception as e:
         return json.dumps({"files": [], "error": str(e)})
+
+
+REFINE_SYSTEM = """You are an expert AI Editor.
+Your task is to rewrite the selected text based on the user's instruction.
+
+RULES:
+1. Output ONLY the rewritten text. No "Here is the new version" chatter.
+2. Maintain the formatting (Markdown/HTML) of the original.
+3. Fit the tone of the surrounding document.
+"""
+
+async def refine_text(selection: str, instruction: str, context: str = ""):
+    """Refines a specific text selection based on user instruction."""
+    try:
+        completion = await client.chat.completions.create(
+            model=MODEL_CHAT,
+            messages=[
+                {"role": "system", "content": REFINE_SYSTEM},
+                {"role": "user", "content": f"ORIGINAL CONTEXT:\n{context[:1000]}...\n\nSELECTED TEXT:\n{selection}\n\nINSTRUCTION:\n{instruction}"}
+            ]
+        )
+        return completion.choices[0].message.content
+    except Exception as e:
+        return f"Error refining text: {str(e)}"

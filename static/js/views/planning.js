@@ -317,5 +317,126 @@ export default {
                 }
             );
         }
+
+        // --- Refinement Toolbar Logic ---
+
+        // 1. Inject Toolbar HTML (if not exists)
+        if (!document.getElementById('refine-toolbar')) {
+            const toolbarHTML = `
+                <div id="refine-toolbar" class="hidden absolute z-50 bg-gray-900 border border-purple-500/30 shadow-2xl rounded-lg p-2 flex gap-2 items-center animate-fade-in transition-all">
+                    <input type="text" id="refine-input" placeholder="How should I change this?" class="bg-black/50 text-white text-xs px-2 py-1 rounded border border-white/10 w-48 focus:outline-none focus:border-purple-500 transition-colors">
+                    <button id="btn-refine-go" class="text-purple-400 hover:text-white p-1 hover:bg-purple-500/20 rounded cursor-pointer transition-colors">
+                        <i class="ri-magic-line"></i>
+                    </button>
+                    <button id="btn-refine-close" class="text-gray-500 hover:text-white p-1 hover:bg-white/10 rounded cursor-pointer transition-colors ml-1">
+                        <i class="ri-close-line"></i>
+                    </button>
+                </div>
+            `;
+            // Append to body to ensure it floats above everything
+            document.body.insertAdjacentHTML('beforeend', toolbarHTML);
+        }
+
+        const toolbar = document.getElementById('refine-toolbar');
+        const refineInput = document.getElementById('refine-input');
+        const refineBtn = document.getElementById('btn-refine-go');
+        const closeBtn = document.getElementById('btn-refine-close');
+        let currentRange = null;
+
+        // Hide toolbar
+        const hideToolbar = () => {
+            toolbar.classList.add('hidden');
+            refineInput.value = '';
+        };
+
+        closeBtn.onclick = hideToolbar;
+
+        // selection change handler
+        document.addEventListener('mouseup', (e) => {
+            // If clicking inside toolbar, ignore
+            if (toolbar.contains(e.target)) return;
+
+            const selection = window.getSelection();
+            const text = selection.toString().trim();
+
+            // Check if selection is inside doc-content
+            if (!text || !docContent.contains(selection.anchorNode)) {
+                hideToolbar();
+                return;
+            }
+
+            // Save range
+            currentRange = selection.getRangeAt(0);
+            const rect = currentRange.getBoundingClientRect();
+
+            // Position toolbar
+            toolbar.style.top = `${rect.top + window.scrollY - 50}px`;
+            toolbar.style.left = `${rect.left + window.scrollX}px`;
+            toolbar.classList.remove('hidden');
+            refineInput.focus();
+        });
+
+        // Refine Action
+        refineBtn.onclick = async () => {
+            const instruction = refineInput.value.trim();
+            if (!instruction || !currentRange) return;
+
+            const selectedText = currentRange.toString();
+
+            // Visual Feedback
+            hideToolbar();
+
+            // Create a wrapper for visual feedback
+            const span = document.createElement('span');
+            span.className = "bg-purple-900/40 animate-pulse text-gray-200 px-1 rounded";
+            span.textContent = "✨ Refining: " + selectedText;
+
+            currentRange.deleteContents();
+            currentRange.insertNode(span);
+
+            try {
+                // Determine context (simplified: just grab whole doc text or surrounding)
+                const fullContext = docContent.innerText;
+
+                const res = await fetch('/api/refine', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(localStorage.getItem('flux_token') ? { 'Authorization': 'Bearer ' + localStorage.getItem('flux_token') } : {})
+                    },
+                    body: JSON.stringify({
+                        selection: selectedText,
+                        instruction: instruction,
+                        context: fullContext
+                    })
+                });
+
+                if (!res.ok) throw new Error("Refine failed");
+
+                const data = await res.json();
+
+                // Replace with new text (parsed as markdown/html)
+                // We use a temporary container to parse the markdown string into nodes
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = marked.parseInline(data.refined_text); // use parseInline for standard text
+
+                // Replace the loader span with new nodes
+                span.replaceWith(...tempDiv.childNodes);
+
+                app.toast('Text refined successfully', 'success');
+
+            } catch (err) {
+                console.error(err);
+                // Revert
+                span.replaceWith(document.createTextNode(selectedText));
+                app.toast('Refinement failed', 'error');
+            }
+        };
+
+        // Allow Enter key to submit
+        refineInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') refineBtn.click();
+        });
+
     }
 };
