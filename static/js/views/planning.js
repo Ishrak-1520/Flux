@@ -21,14 +21,20 @@ export default {
 
         // --- Data Prep for Bridge ---
         try {
-            if (project.research && project.research.blueprints_json) {
-                const blueprints = JSON.parse(project.research.blueprints_json);
+            if (project.research && project.research.blueprints) {
+                const parsed = JSON.parse(project.research.blueprints);
+
+                // Handle both {blueprints: [...]} and [...] formats
+                const blueprintsList = Array.isArray(parsed) ? parsed : (parsed.blueprints || []);
+
                 const selectedIdx = project.selected_blueprint || 0;
-                window.currentBlueprints = blueprints[selectedIdx] || blueprints[0];
+                window.currentBlueprints = blueprintsList[selectedIdx] || blueprintsList[0];
+
                 // Augment with project title context
                 if (window.currentBlueprints) {
                     window.currentBlueprints.project_name = project.title;
                 }
+
             }
         } catch (e) {
             console.error("Failed to parse blueprints for bridge", e);

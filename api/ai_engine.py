@@ -202,9 +202,12 @@ async def generate_blueprints_json(context: str):
         )
         
         content = completion.choices[0].message.content
+        print(f"DEBUG: Blueprints Raw Content: {content}")
         return json.loads(content)
     except Exception as e:
         print(f"Blueprint Generation Error: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 

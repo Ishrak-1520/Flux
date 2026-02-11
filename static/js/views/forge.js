@@ -20,7 +20,6 @@ export default {
         if (pendingBlueprint) {
             try {
                 const blueprint = JSON.parse(pendingBlueprint);
-                console.log("✅ Blueprint Detected:", blueprint);
                 activeContext = blueprint;
 
                 // We'll update the UI in renderHTML or here if possible, 
