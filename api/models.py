@@ -72,3 +72,16 @@ class BlueprintItem(BaseModel):
 class BlueprintResponse(BaseModel):
     blueprints: List[BlueprintItem]
 
+
+# ─── Forge ───────────────────────────────────────────────────
+
+class FileNode(BaseModel):
+    path: str       # e.g. "src/app.py" or "Dockerfile"
+    content: str    # The actual code
+    language: str   # "python", "javascript", "json", "markdown"
+
+class ScaffoldResponse(BaseModel):
+    root_directory: str # e.g. "flux-generated-app"
+    files: List[FileNode]
+    commands: List[str] # e.g. ["npm install", "npm run dev"]
+

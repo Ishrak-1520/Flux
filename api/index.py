@@ -3,9 +3,10 @@ Flux – Main FastAPI Application
 Entry point for the backend. Handles routing, auth, and AI streaming.
 """
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse
 from sse_starlette.sse import EventSourceResponse
 import os
 import json
@@ -231,6 +232,37 @@ async def stream_doc_endpoint(
             yield {"data": json.dumps({'type': 'error', 'content': str(e)})}
 
     return EventSourceResponse(event_generator())
+
+
+@app.post("/api/project/{project_id}/scaffold")
+async def create_scaffold(project_id: int, request: Request, user_id: int = Depends(auth.get_current_user)):
+    try:
+        data = await request.json()
+        context = data.get('context', 'Generic Web App')
+        
+        json_str = await ai_engine.generate_scaffold_json(context)
+        return json.loads(json_str)
+    except Exception as e:
+        print(f"Scaffold Generation Error: {e}")
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+
+
+# ─── SPA Fallback ─────────────────────────────────────────────
+
+@app.exception_handler(404)
+async def spa_fallback(request: Request, exc: Exception):
+    # If the request is for an API route, return 404
+    if request.url.path.startswith("/api"):
+        return JSONResponse(status_code=404, content={"detail": "API endpoint not found"})
+    
+    # For everything else, serve index.html (SPA Router handles the rest)
+    index_path = os.path.join("static", "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    
+    return JSONResponse(status_code=404, content={"detail": "Static assets not found"})
+
 
 # ─── Static Files ────────────────────────────────────────────
 

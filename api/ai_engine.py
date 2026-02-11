@@ -230,3 +230,34 @@ async def stream_document(project_context: str, doc_type: str, existing_text: st
 
     except Exception as e:
         yield {'type': 'error', 'content': str(e)}
+
+
+SCAFFOLD_SYSTEM = """You are a Senior DevOps Engineer. 
+Generate a robust project scaffold based on the user's Blueprint.
+OUTPUT STRICT JSON ONLY matching the ScaffoldResponse schema.
+
+RULES:
+1. **Structure**: specific to the tech stack (e.g., React = /src, /public; Python = /app, requirements.txt).
+2. **Config**: YOU MUST generate valid content for:
+   - Dockerfile (Production ready)
+   - docker-compose.yml
+   - README.md (Use the Blueprint info)
+   - .gitignore
+   - package.json / requirements.txt (Include key dependencies)
+3. **Code**: Generate 2-3 core source files (e.g., main.py, App.js) with meaningful boilerplate code, not just "Hello World".
+"""
+
+async def generate_scaffold_json(context: str):
+    """Generates a file tree JSON based on the blueprint context."""
+    try:
+        completion = await client.chat.completions.create(
+            model=MODEL_CHAT,
+            messages=[
+                {"role": "system", "content": SCAFFOLD_SYSTEM},
+                {"role": "user", "content": f"Blueprint Context: {context}\n\nGenerate Project Scaffold."}
+            ],
+            response_format={"type": "json_object"}
+        )
+        return completion.choices[0].message.content
+    except Exception as e:
+        return json.dumps({"files": [], "error": str(e)})

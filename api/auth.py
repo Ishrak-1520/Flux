@@ -9,7 +9,7 @@ import bcrypt
 from datetime import datetime, timedelta, timezone
 from fastapi import Request, HTTPException
 
-SECRET = os.getenv("JWT_SECRET", "flux_default_secret")
+SECRET = os.getenv("JWT_SECRET", "dev-fallback-secret-key-123")
 ALGORITHM = "HS256"
 TOKEN_EXPIRY_DAYS = 7
 

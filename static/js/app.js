@@ -12,6 +12,7 @@ import IdeationView from './views/ideation.js';
 import ResearchView from './views/research.js';
 import PlanningView from './views/planning.js';
 import ExportView from './views/export.js';
+import ForgeView from './views/forge.js';
 
 // Import Components
 import Header from './components/header.js';
@@ -32,6 +33,7 @@ const app = {
         '/project/:id/ideation': IdeationView,
         '/project/:id/research': ResearchView,
         '/project/:id/planning': PlanningView,
+        '/project/:id/forge': ForgeView,
         '/project/:id/export': ExportView,
     },
 

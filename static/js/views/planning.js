@@ -50,7 +50,10 @@ export default {
                         </button>
                     </nav>
 
-                    <div class="p-4 border-t border-white/5">
+                    <div class="p-4 border-t border-white/5 space-y-2">
+                        <a href="#/project/${projectId}/forge" class="flex items-center justify-center gap-2 w-full py-2 bg-gradient-to-r from-purple-600 to-flux-500 hover:from-purple-500 hover:to-flux-400 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-purple-900/20">
+                            <i class="ri-hammer-line"></i> Open Forge
+                        </a>
                          <a href="#/project/${projectId}/export" class="flex items-center justify-center gap-2 w-full py-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg text-xs font-medium transition-colors border border-white/5">
                             <i class="ri-download-cloud-line"></i> Export Assets
                         </a>

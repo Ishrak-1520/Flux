@@ -58,32 +58,32 @@ export const API = {
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 let errorMessage = `Error ${response.status}: ${response.statusText}`;
-                if (errorData.detail) {
-                    if (Array.isArray(errorData.detail)) {
-                        // Handle FastAPI validation errors (list of objects)
-                        errorMessage = errorData.detail
-                            .map(err => err.msg || JSON.stringify(err))
-                            .join('\n');
-                    } else if (typeof errorData.detail === 'object') {
-                        errorMessage = JSON.stringify(errorData.detail);
-                    } else {
-                        errorMessage = errorData.detail;
-                    }
-                }
+                if (errorData.detail) errorMessage = errorData.detail;
                 throw new Error(errorMessage);
             }
 
-            // Return JSON if content-type is json
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return await response.json();
-            }
-
-            return response;
+            return response.json();
         } catch (error) {
             console.error('API Request Failed:', error);
             throw error;
         }
+    },
+
+    /**
+     * Helper for GET requests
+     */
+    async get(endpoint) {
+        return this.request(endpoint, { method: 'GET' });
+    },
+
+    /**
+     * Helper for POST requests
+     */
+    async post(endpoint, body) {
+        return this.request(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(body)
+        });
     },
 
     /**
@@ -94,7 +94,9 @@ export const API = {
             method: 'POST',
             body: JSON.stringify({ email, password })
         });
-        this.setToken(data.token);
+        // Handle both 'token' and 'access_token' (JWT standard)
+        const token = data.token || data.access_token;
+        this.setToken(token);
         return data.user;
     },
 
