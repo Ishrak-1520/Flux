@@ -1,7 +1,26 @@
-/.env
-/debug_log.txt
-/PRD.md
-/project_status_report.md
-/schema.sql
-/test_ai.py
-/test_jwt.py
+# Environment & Credentials
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs & Temp
+debug_log.txt
+*.log
+PRD.md
+project_status_report.md
+schema.sql
+test_ai.py
+test_jwt.py
+debug_db.py
+debug_search.py
+test_scaffold.py
+test_search.py
+test_refine.py
+check_imports.py
