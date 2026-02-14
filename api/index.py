@@ -16,7 +16,7 @@ from typing import Optional
 from . import db, auth, ai_engine
 from .models import (
     RegisterRequest, LoginRequest, ProjectCreate, 
-    IdeationRequest, BlueprintSelect, DocType, ProjectUpdate
+    IdeationRequest, BlueprintSelect, DocType, ProjectUpdate, BlueprintAssistRequest
 )
 
 app = FastAPI(title="Flux API", version="1.0.0")
@@ -236,6 +236,91 @@ async def stream_doc_endpoint(
 
     return EventSourceResponse(event_generator())
 
+@app.post("/api/projects/{project_id}/plan/stream/{doc_type}")
+async def stream_doc_endpoint_post(
+    project_id: int, 
+    doc_type: DocType,
+    request: Request,
+    user_id: int = Depends(auth.get_current_user)
+):
+    try:
+        data = await request.json()
+        raw_context = data.get('context', {})
+    except:
+        raw_context = {}
+
+    project = await db.get_project(project_id, user_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+
+    # If we have a custom blueprint context, use it!
+    if raw_context and isinstance(raw_context, dict):
+        # Extract fields
+        c_title = raw_context.get('project_name') or raw_context.get('title') or project['title']
+        c_desc = raw_context.get('description') or raw_context.get('problem') or "No description"
+        c_tech = raw_context.get('tech_stack') or []
+        c_features = raw_context.get('features') or raw_context.get('solution') or []
+        
+        # Format Tech Stack
+        tech_str = ""
+        if isinstance(c_tech, list):
+            # scalable for both strings and objects
+            tech_str = ", ".join([t.get('technology') if isinstance(t, dict) else str(t) for t in c_tech])
+        else:
+            tech_str = str(c_tech)
+
+        context = f"""
+        PROJECT NAME: {c_title}
+        DESCRIPTION: {c_desc}
+        
+        REQUIRED TECH STACK: {tech_str}
+        
+        KEY FEATURES/REQUIREMENTS:
+        {c_features}
+        
+        CONSTRAINT: Use this exact tech stack. Do not use generic templates.
+        """
+        print(f"📝 Generating {doc_type} with Custom Context: {c_title}")
+
+    else:
+        # Fallback to DB
+        research = await db.get_research(project_id)
+        gap = research['gap_report'] if research else "No research found."
+        
+        context = f"""
+        Project: {project['title']}
+        Category: {project['category']}
+        Original Idea: {project['original_prompt']}
+        
+        Research Gap Analysis:
+        {gap}
+        
+        Selected Blueprint Index: {project['selected_blueprint']}
+        """
+
+    async def event_generator():
+        full_doc = ""
+        try:
+            async for data in ai_engine.stream_document(context, doc_type.value):
+                if data["type"] == "content" and data.get("content"):
+                    full_doc += data["content"]
+                elif data["type"] == "done":
+                    continue
+                
+                yield {"data": json.dumps(data)}
+            
+            # Save and yield final done
+            if full_doc:
+                await db.save_doc(project_id, doc_type.value, full_doc)
+                yield {"data": json.dumps({'type': 'done', 'content_length': len(full_doc)})}
+            else:
+                yield {"data": json.dumps({'type': 'error', 'content': 'No document generated.'})}
+        except Exception as e:
+            print(f"Doc Stream Error: {e}")
+            yield {"data": json.dumps({'type': 'error', 'content': str(e)})}
+
+    return EventSourceResponse(event_generator())
+
 
 @app.post("/api/project/{project_id}/scaffold")
 async def create_scaffold(project_id: int, request: Request, user_id: int = Depends(auth.get_current_user)):
@@ -278,6 +363,18 @@ async def create_scaffold(project_id: int, request: Request, user_id: int = Depe
         print(f"Scaffold Generation Error: {e}")
         return JSONResponse(status_code=500, content={"detail": str(e)})
 
+
+
+
+
+
+@app.post("/api/research/assist")
+async def assist_blueprint(req: BlueprintAssistRequest, user_id: int = Depends(auth.get_current_user)):
+    try:
+        suggestion = await ai_engine.suggest_blueprint_details(req.user_description)
+        return suggestion
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 

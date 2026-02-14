@@ -29,13 +29,34 @@ To help you learn more, you MUST include this section at the end of the Improvem
    - Format: `* **[Company/Tool Name]**: [What they do and what we can learn from them]`
 """
 
+STYLE_GUIDE = """
+STYLE GUIDE (STRICT ENFORCEMENT):
+1. **NO EMOJIS:** Do not use emojis anywhere in the document. Not even in headers.
+   - BAD: "## 🚀 Introduction"
+   - GOOD: "## Introduction"
+
+2. **NO EM-DASHES:** Avoid using em-dashes (—) for pauses or lists. It makes the text look machine-generated.
+   - BAD: "The system is fast — it processes data in real-time."
+   - GOOD: "The system is fast; it processes data in real-time." or "The system is fast and processes data in real-time."
+
+3. **PROFESSIONAL TONE:** Write like a Senior Technical Writer at a Fortune 500 company.
+   - Be concise.
+   - Use active voice.
+   - Avoid flowery adjectives (e.g., "seamlessly," "cutting-edge," "robust").
+   - Use standard bullet points (-) instead of fancy symbols.
+"""
+
 VISUAL_PROTOCOL = """
 ## Visual Intelligence Protocol
 Whenever describing processes, architecture, or timelines, you MUST include a Mermaid.js diagram wrapped in ```mermaid blocks.
-- **User Flows**: Use `graph TD` to show user journey.
-- **Databases**: Use `erDiagram` for schema relationships.
-- **Roadmaps**: Use `gantt` for timelines.
-- **System Architecture**: Use `flowchart LR` for component interaction.
+
+CRITICAL SYNTAX RULES (To prevent errors):
+1. **WRAP ALL LABELS IN QUOTES**: 
+   - BAD: A[User Login (Auth)] --> B{Valid?}
+   - GOOD: A["User Login (Auth)"] --> B{"Valid?"}
+2. **USE STANDARD SHAPES**: Use only `[]` for rects, `{}` for rhombuses, and `(())` for circles.
+3. **NO SPECIAL CHARACTERS OUTSIDE QUOTES**.
+4. Keep the diagram simple (max 10-15 nodes) to ensure rendering stability.
 """
 
 FORMATTING_REMINDER = """
@@ -67,18 +88,19 @@ PROCESS:
 
 {CITATION_PROTOCOL}
 
+{STYLE_GUIDE}
+
 {FORMATTING_REMINDER}
 
 STRICT OUTPUT CONSTRAINTS:
 - Use standard Markdown.
-- NO EMOJIS (Safe Mode).
 - Encouraging, helpful tone.
 """
 
-PRD_SYSTEM = f"{MENTOR_PERSONA} Write a detailed PRD (Product Plan) for a beginner. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} NO EMOJIS."
-SRS_SYSTEM = f"{MENTOR_PERSONA} Write a Technical Spec (Step-by-step logic) for a student. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} NO EMOJIS."
-ROADMAP_SYSTEM = f"{MENTOR_PERSONA} Write an Implementation Roadmap (A to-do list) for building this. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} NO EMOJIS."
-CURSORRULES_SYSTEM = f"{MENTOR_PERSONA} Write a .cursorrules file to help an AI assistant code this project with the student. {CITATION_PROTOCOL} NO EMOJIS."
+PRD_SYSTEM = f"{MENTOR_PERSONA} Write a detailed PRD (Product Plan) for a beginner. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} {STYLE_GUIDE}"
+SRS_SYSTEM = f"{MENTOR_PERSONA} Write a Technical Spec (Step-by-step logic) for a student. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} {STYLE_GUIDE}"
+ROADMAP_SYSTEM = f"{MENTOR_PERSONA} Write an Implementation Roadmap (A to-do list) for building this. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} {STYLE_GUIDE}"
+CURSORRULES_SYSTEM = f"{MENTOR_PERSONA} Write a .cursorrules file to help an AI assistant code this project with the student. {CITATION_PROTOCOL} {STYLE_GUIDE}"
 
 BLUEPRINT_GENERATOR_SYSTEM = f"""{MENTOR_PERSONA}
 Based on the analysis, suggest exactly 3 Project Blueprints (Starter Ideas).
@@ -288,23 +310,42 @@ OUTPUT STRICT JSON ONLY matching this exact schema:
 
 RULES:
 1. **Structure**: specific to the tech stack (e.g., React = /src, /public; Python = /app, requirements.txt).
-2. **Config**: YOU MUST generate valid content for:
-   - Dockerfile (Production ready)
-   - docker-compose.yml
-   - README.md (Use the Blueprint info)
-   - .gitignore
-   - package.json / requirements.txt (Include key dependencies)
-3. **Code**: Generate 2-3 core source files (e.g., main.py, App.js) with meaningful boilerplate code, not just "Hello World".
+2. **Config**: YOU MUST generate valid content for required config files (package.json, requirements.txt, go.mod, etc.)
+3. **Code**: Generate 2-3 core source files with meaningful boilerplate code matching the requested features.
 """
 
-async def generate_scaffold_json(context: str):
+async def generate_scaffold_json(context: str | dict):
     """Generates a file tree JSON based on the blueprint context."""
     try:
+        # Prompt Engineering
+        if isinstance(context, dict):
+             c_title = context.get('project_name') or context.get('title') or "ProjeX"
+             c_tech = context.get('tech_stack') or []
+             c_features = context.get('features') or []
+
+             # Format Tech Stack
+             tech_str = ""
+             if isinstance(c_tech, list):
+                 tech_str = ", ".join([t.get('technology') if isinstance(t, dict) else str(t) for t in c_tech])
+             else:
+                 tech_str = str(c_tech)
+
+             user_prompt = f"""
+             PROJECT: {c_title}
+             STACK: {tech_str}
+             FEATURES: {c_features}
+             
+             TASK: Generate a file structure + boilerplate code for a {tech_str} application.
+             CONSTRAINT: Ensure all config files (e.g. package.json) matches the {tech_str} ecosystem.
+             """
+        else:
+             user_prompt = f"Blueprint Context: {context}\n\nGenerate Project Scaffold."
+
         completion = await client.chat.completions.create(
             model=MODEL_CHAT,
             messages=[
                 {"role": "system", "content": SCAFFOLD_SYSTEM},
-                {"role": "user", "content": f"Blueprint Context: {context}\n\nGenerate Project Scaffold."}
+                {"role": "user", "content": user_prompt}
             ],
             response_format={"type": "json_object"}
         )
@@ -335,3 +376,45 @@ async def refine_text(selection: str, instruction: str, context: str = ""):
         return completion.choices[0].message.content
     except Exception as e:
         return f"Error refining text: {str(e)}"
+
+
+# ─── BLUEPRINT ASSISTANT ─────────────────────────────────────
+
+BLUEPRINT_ASSISTANT_SYSTEM = f"""{MENTOR_PERSONA}
+The user has a rough idea for a project. 
+Your goal is to flesh it out into a structured "Blueprint" so they can start building.
+
+INPUT: User Description (e.g., "A social network for cats")
+OUTPUT: Valid JSON with:
+- suggested_title: Catchy name
+- features: List of 3-4 core features (strings)
+- tech_stack: List of objects {{ "category": "...", "technology": "...", "reason": "..." }}
+
+CRITICAL:
+1. Return ONLY valid JSON.
+2. Keep the tech stack simple and beginner-friendly (e.g., HTML/JS/Firebase or Python/Flask).
+3. Explain the 'reason' for each tech choice simply.
+"""
+
+async def suggest_blueprint_details(user_description: str):
+    """Generates structured blueprint details from a rough user description."""
+    try:
+        completion = await client.chat.completions.create(
+            model=MODEL_THINKING,
+            messages=[
+                {"role": "system", "content": BLUEPRINT_ASSISTANT_SYSTEM},
+                {"role": "user", "content": f"User Idea: {user_description}\n\nSuggest details."}
+            ],
+            response_format={"type": "json_object"}
+        )
+        return json.loads(completion.choices[0].message.content)
+    except Exception as e:
+        print(f"Blueprint Assistant Error: {e}")
+        # Fallback
+        return {
+            "suggested_title": "My Awesome Project",
+            "features": ["User Login", "Dashboard", "Database Connection"],
+            "tech_stack": [
+                {"category": "Frontend", "technology": "HTML/CSS/JS", "reason": "Standard web technologies."}
+            ]
+        }

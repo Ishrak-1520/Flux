@@ -183,6 +183,23 @@ const app = {
         API.setToken(null);
         this.state.user = null;
         window.location.hash = '/login';
+    },
+
+    /**
+     * Reset Project State
+     */
+    startNewProject() {
+        if (confirm("Start a new project? This will clear your current progress and research.")) {
+            // Clear Flux specific keys
+            localStorage.removeItem('flux_research_data');
+            localStorage.removeItem('flux_planning_docs');
+            localStorage.removeItem('flux_scaffold_status');
+            localStorage.removeItem('forge_blueprint');
+
+            // Redirect to dashboard
+            window.location.hash = '/dashboard';
+            window.location.reload();
+        }
     }
 };
 

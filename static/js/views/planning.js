@@ -129,6 +129,72 @@ export default {
             'cursorrules': 'AI Instructions (.cursorrules)'
         };
 
+        // Initialize State with LocalStorage
+        let localDocCache = {};
+
+        // --- Configure Mermaid & Marked ---
+        if (window.mermaid) {
+            window.mermaid.initialize({
+                startOnLoad: false,
+                theme: 'base',
+                securityLevel: 'loose',
+                themeVariables: {
+                    primaryColor: '#8b5cf6',
+                    edgeLabelBackground: '#ffffff',
+                    tertiaryColor: '#f1f5f9'
+                }
+            });
+        }
+
+        const renderer = new marked.Renderer();
+        const originalCodeRenderer = renderer.code.bind(renderer);
+
+        renderer.code = function (code, language) {
+            if (language === 'mermaid') {
+                const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                return `<div class="mermaid" id="${id}">${code}</div>`;
+            }
+            return originalCodeRenderer(code, language);
+        };
+
+        marked.use({ renderer: renderer });
+
+        async function renderDiagrams() {
+            if (!window.mermaid) return;
+            try {
+                await window.mermaid.run({
+                    querySelector: '.mermaid'
+                });
+            } catch (err) {
+                console.error("Mermaid Render Error:", err);
+                // Find broken diagrams
+                document.querySelectorAll('.mermaid').forEach(el => {
+                    if (!el.querySelector('svg')) {
+                        el.innerHTML = `<div class="p-4 bg-red-50 border border-red-200 text-red-600 rounded">
+                            <p class="font-bold text-xs mb-2">⚠️ Diagram Syntax Error</p>
+                            <pre class="text-xs overflow-auto">${el.textContent}</pre>
+                        </div>`;
+                    }
+                });
+            }
+        }
+
+        try {
+            const savedDocs = localStorage.getItem('flux_planning_docs');
+            if (savedDocs) {
+                localDocCache = JSON.parse(savedDocs);
+                // Merge with default cache if needed, though simple assignment works here
+                app.toast('Restored previous plan', 'success');
+            }
+        } catch (e) {
+            console.error("Failed to restore docs", e);
+        }
+
+        // Initialize docCache with restored values or empty strings
+        Object.keys(docTitles).forEach(key => {
+            docCache[key] = localDocCache[key] || '';
+        });
+
         // --- Start of Task 3 Rename Logic ---
         titleHeader.addEventListener('click', () => {
             const h2 = titleHeader.querySelector('h2');
@@ -216,7 +282,13 @@ export default {
 
 
         // Start Stream
-        startStream('roadmap', docContent, true);
+        // Start Stream or Render Cache
+        if (docCache[activeDoc]) {
+            renderContent(docCache[activeDoc], activeDoc);
+            // Manually activate first tab style if needed (it is by default in HTML usually)
+        } else {
+            startStream('roadmap', docContent, true);
+        }
 
         // Tab Handler
         docTabs.forEach(tab => {
@@ -247,11 +319,12 @@ export default {
                                             <span class="font-mono text-xs uppercase tracking-widest">Retrieving_Data...</span>
                                         </div>`;
 
-                // Load or Stream
+                // Check Cache
                 if (docCache[type]) {
                     renderContent(docCache[type], type);
                 } else {
-                    startStream(type, docContent, type !== 'cursorrules');
+                    // Start Stream
+                    startStream(type, docContent, true);
                 }
             });
         });
@@ -276,72 +349,34 @@ export default {
                 docContent.innerHTML = `<pre class="font-mono text-xs text-green-400 bg-black/40 p-4 rounded-lg border border-white/5 overflow-x-auto">${content}</pre>`;
             } else {
                 docContent.innerHTML = marked.parse(content);
+
                 // Style tables and lists
                 docContent.querySelectorAll('table').forEach(t => t.classList.add('w-full', 'border-collapse', 'my-4', 'text-sm'));
                 docContent.querySelectorAll('th').forEach(t => t.classList.add('text-left', 'p-2', 'border-b', 'border-white/10', 'text-gray-400', 'font-mono', 'uppercase', 'text-xs'));
                 docContent.querySelectorAll('td').forEach(t => t.classList.add('p-2', 'border-b', 'border-white/5', 'text-gray-300'));
                 docContent.querySelectorAll('input[type="checkbox"]').forEach(c => c.classList.add('accent-flux-500', 'mr-2', 'h-4', 'w-4', 'bg-slate-800', 'border-gray-600', 'rounded'));
 
-                // Visual Intelligence: Render Mermaid Diagrams with Entity Decoding
-                setTimeout(async () => {
-                    // Select all mermaid blocks (usually <code class="language-mermaid">)
-                    const mermaidBlocks = docContent.querySelectorAll('pre code.language-mermaid');
-
-                    for (const block of mermaidBlocks) {
-                        try {
-                            // 1. Get raw text
-                            let graphDefinition = block.textContent;
-
-                            // 2. CRITICAL: Decode HTML entities (e.g., converts 'A &gt; B' back to 'A > B')
-                            const txt = document.createElement("textarea");
-                            txt.innerHTML = graphDefinition;
-                            graphDefinition = txt.value;
-
-                            // 3. Create container
-                            const newDiv = document.createElement('div');
-                            newDiv.className = 'mermaid bg-black/20 rounded-lg p-4 my-6 overflow-x-auto text-center border border-white/5';
-                            newDiv.textContent = graphDefinition;
-
-                            // 4. Swap DOM elements
-                            const preElement = block.parentElement; // The <pre> tag
-                            if (preElement && preElement.tagName === 'PRE') {
-                                preElement.replaceWith(newDiv);
-                            } else {
-                                block.replaceWith(newDiv);
-                            }
-                        } catch (err) {
-                            console.warn("Mermaid Prep Error:", err);
-                        }
-                    }
-
-                    // 5. Run Mermaid safely
-                    if (window.mermaid) {
-                        try {
-                            await window.mermaid.run({
-                                querySelector: '.mermaid'
-                            });
-                        } catch (err) {
-                            console.error("Mermaid Render Failed:", err);
-                            // Mark failed blocks visually so user knows
-                            docContent.querySelectorAll('.mermaid[data-processed!="true"]').forEach(el => {
-                                el.innerHTML = `<div class="text-red-500 text-xs font-mono p-2 border border-red-500/30 bg-red-500/10 rounded">Diagram Render Error (Syntax)</div>`;
-                            });
-                        }
-                    }
-                }, 100);
+                // Process Mermaid Diagrams
+                requestAnimationFrame(() => {
+                    renderDiagrams();
+                });
             }
         }
-
         function startStream(docType, targetEl, renderMarkdown) {
             let content = '';
+
+            // Get Context (The Fix)
+            const contextData = window.currentBlueprints || {};
 
             API.streamDoc(
                 projectId,
                 docType,
+                contextData,
                 (data) => {
                     if (data.type === 'content') {
                         content += data.content;
                         if (renderMarkdown) {
+                            // Re-parse with the new renderer
                             targetEl.innerHTML = marked.parse(content);
                         } else {
                             targetEl.textContent = content;
@@ -350,7 +385,16 @@ export default {
                 },
                 (data) => {
                     docCache[docType] = content;
+
+                    // Save to LocalStorage
+                    localStorage.setItem('flux_planning_docs', JSON.stringify(docCache));
+
                     renderContent(content, docType);
+
+                    // Trigger Diagram rendering on final content
+                    requestAnimationFrame(() => {
+                        renderDiagrams();
+                    });
                 },
                 (err) => {
                     console.error(err);

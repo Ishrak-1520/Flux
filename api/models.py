@@ -43,7 +43,7 @@ class ProjectUpdate(BaseModel):
 
 
 class BlueprintSelect(BaseModel):
-    blueprint_index: int = Field(..., ge=0, le=2)
+    blueprint_index: int = Field(..., ge=-1)
 
 
 # ─── AI / Research ────────────────────────────────────────────
@@ -90,4 +90,9 @@ class ScaffoldResponse(BaseModel):
     root_directory: str # e.g. "flux-generated-app"
     files: List[FileNode]
     commands: List[str] # e.g. ["npm install", "npm run dev"]
+
+class BlueprintAssistRequest(BaseModel):
+    user_description: str
+
+
 

@@ -31,6 +31,26 @@ export default {
             localStorage.removeItem('forge_blueprint');
         }
 
+        // Check for Existing Scaffold
+        const savedScaffold = localStorage.getItem('flux_scaffold_status');
+        if (savedScaffold) {
+            try {
+                // Determine if we should show it (maybe just the download button?)
+                // For now, let's restore the full tree if we saved the data object
+                const data = JSON.parse(savedScaffold);
+                currentScaffold = data;
+
+                // Defer render until HTML is injected
+                setTimeout(() => {
+                    const btn = document.getElementById('btn-generate');
+                    if (btn) btn.classList.add('hidden');
+                    document.getElementById('btn-download').classList.remove('hidden');
+                    window.renderForgeTree(data);
+                }, 100);
+            } catch (e) {
+                console.error("Scaffold restore error", e);
+            }
+        }
         window.triggerScaffold = async function () {
             console.log("⚡ Triggering Scaffold Sequence...");
             const btn = document.getElementById('btn-generate');
@@ -65,6 +85,10 @@ export default {
                 console.log("✅ Scaffold Data:", data);
 
                 currentScaffold = data;
+
+                // Save Status
+                localStorage.setItem('flux_scaffold_status', JSON.stringify(data));
+
                 window.renderForgeTree(data); // Call helper
 
                 // Swap Buttons

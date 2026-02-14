@@ -35,12 +35,19 @@ export default {
                         </p>
                     </div>
                     
-                    <div id="status-badge" class="px-4 py-2 rounded-lg bg-yellow-500/5 text-yellow-500 border border-yellow-500/20 flex items-center gap-3 font-mono text-xs">
-                        <span class="relative flex h-2 w-2">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
-                        </span>
-                        <span>Getting things ready...</span>
+                    <div class="flex gap-4">
+                        <button id="btn-regenerate" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 flex items-center gap-2 font-mono text-xs transition-colors">
+                            <i class="ri-refresh-line"></i>
+                            <span>REGENERATE_IDEAS</span>
+                        </button>
+                        
+                        <div id="status-badge" class="px-4 py-2 rounded-lg bg-yellow-500/5 text-yellow-500 border border-yellow-500/20 flex items-center gap-3 font-mono text-xs">
+                            <span class="relative flex h-2 w-2">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+                            </span>
+                            <span>Getting things ready...</span>
+                        </div>
                     </div>
                 </div>
 
@@ -105,6 +112,64 @@ export default {
                         </div>
                     </div>
                 </div>
+                </div>
+
+                <!-- Custom Blueprint Modal -->
+                <div id="blueprint-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center">
+                    <div class="bg-gray-900 border border-white/10 rounded-xl w-full max-w-2xl p-6 shadow-2xl relative">
+                        <button id="close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-white">
+                            <i class="ri-close-line text-xl"></i>
+                        </button>
+                        
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="p-2 rounded bg-flux-500/20 text-flux-400">
+                                <i class="ri-edit-circle-line"></i>
+                            </div>
+                            <h2 class="text-xl font-bold text-white">Blueprint Studio</h2>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-mono text-gray-500 mb-1">PROJECT NAME</label>
+                                <input type="text" id="custom-title" class="w-full bg-black/50 border border-white/10 rounded p-2 text-white text-sm focus:border-flux-500 focus:outline-none" placeholder="e.g. CatSpace">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-mono text-gray-500 mb-1">ONE-LINER TAGLINE</label>
+                                <input type="text" id="custom-tagline" class="w-full bg-black/50 border border-white/10 rounded p-2 text-white text-sm focus:border-flux-500 focus:outline-none" placeholder="e.g. The Facebook for Felines">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-mono text-gray-500 mb-1">DESCRIPTION (Required for AI)</label>
+                                    <textarea id="custom-desc" rows="4" class="w-full bg-black/50 border border-white/10 rounded p-2 text-white text-sm focus:border-flux-500 focus:outline-none" placeholder="Describe your idea briefly..."></textarea>
+                                </div>
+                                <div class="space-y-4">
+                                     <div>
+                                        <label class="block text-xs font-mono text-gray-500 mb-1">KEY FEATURES</label>
+                                        <textarea id="custom-features" rows="4" class="w-full bg-black/50 border border-white/10 rounded p-2 text-white text-sm focus:border-flux-500 focus:outline-none" placeholder="- Login&#10;- Feed&#10;- Likes"></textarea>
+                                     </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-mono text-gray-500 mb-1">TECH STACK (JSON or Comma Sep)</label>
+                                <input type="text" id="custom-stack" class="w-full bg-black/50 border border-white/10 rounded p-2 text-white text-sm focus:border-flux-500 focus:outline-none" placeholder='[{"category": "Frontend", "technology": "React", "reason": "..."}]'>
+                            </div>
+
+                            <div class="flex justify-between items-center pt-4 border-t border-white/10 font-mono">
+                                <button id="btn-ai-assist" class="text-flux-400 hover:text-flux-300 text-xs flex items-center gap-2">
+                                    <i class="ri-magic-line"></i>
+                                    <span>AI_SUGGEST_DETAILS</span>
+                                </button>
+                                
+                                <button id="btn-save-custom" class="bg-flux-600 hover:bg-flux-500 text-white px-6 py-2 rounded text-xs font-bold transition-colors">
+                                    PROCEED_TO_PLANNING >
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -116,6 +181,19 @@ export default {
         const reportContent = container.querySelector('#report-content');
         const blueprintsContainer = container.querySelector('#blueprints-container');
         const statusBadge = container.querySelector('#status-badge');
+        const btnRegenerate = container.querySelector('#btn-regenerate');
+
+        // Modal Elements
+        const modal = container.querySelector('#blueprint-modal');
+        const btnCloseModal = container.querySelector('#close-modal');
+        const btnAiAssist = container.querySelector('#btn-ai-assist');
+        const btnSaveCustom = container.querySelector('#btn-save-custom');
+
+        const inpTitle = container.querySelector('#custom-title');
+        const inpTagline = container.querySelector('#custom-tagline');
+        const inpDesc = container.querySelector('#custom-desc');
+        const inpFeatures = container.querySelector('#custom-features');
+        const inpStack = container.querySelector('#custom-stack');
 
         // Toggle Thinking
         thinkingToggle.addEventListener('click', () => {
@@ -123,86 +201,194 @@ export default {
             thinkingArrow.classList.toggle('-rotate-180');
         });
 
-        // Initialize State
+        // State
         let fullMarkdown = '';
         let thinkingText = '';
         let isDone = false;
+        let currentBlueprints = [];
 
-        // Start Streaming
-        API.streamResearch(
-            projectId,
-            (data) => {
-                // Handle AI "thinking" tokens separately
-                if (data.type === 'thinking') {
-                    thinkingText += data.content;
-                    thinkingLog.textContent = thinkingText;
-                    thinkingContainer.scrollTop = thinkingContainer.scrollHeight;
+        // Start Streaming Function
+        const startAnalysis = () => {
+            // Reset UI
+            fullMarkdown = '';
+            thinkingText = '';
+            isDone = false;
+            reportContent.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-64 text-gray-600 animate-pulse font-mono text-xs">
+                    <i class="ri-terminal-box-line text-4xl mb-4 opacity-50"></i>
+                    <span>ESTABLISHING_UPLINK...</span>
+                </div>
+            `;
+            thinkingLog.textContent = '';
+            blueprintsContainer.innerHTML = `
+                <div class="p-6 rounded border border-dashed border-white/10 text-center text-gray-600 text-xs font-mono">
+                    <div class="w-8 h-8 border-2 border-t-flux-500 border-white/10 rounded-full animate-spin mx-auto mb-3"></div>
+                    Awaiting_Analysis_Completion...
+                </div>
+            `;
+            statusBadge.className = "px-4 py-2 rounded-lg bg-yellow-500/5 text-yellow-500 border border-yellow-500/20 flex items-center gap-3 font-mono text-xs";
+            statusBadge.innerHTML = `<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span></span><span>Analyzying Request...</span>`;
 
-                    // Update status badge with thinking visual
-                    if (statusBadge) {
-                        const thought = data.content.trim();
-                        if (thought) {
-                            statusBadge.innerHTML = `
-                                <span class="relative flex h-2 w-2">
-                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                                  <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
-                                </span>
-                                <span class="truncate max-w-[200px]">PROCESSING_NODE: ${thought.substring(0, 20).replace(/\n/g, '')}...</span>
-                             `;
+            btnRegenerate.disabled = true;
+            btnRegenerate.classList.add('opacity-50', 'cursor-not-allowed');
+
+            API.streamResearch(
+                projectId,
+                (data) => {
+                    if (data.type === 'thinking') {
+                        thinkingText += data.content;
+                        thinkingLog.textContent = thinkingText;
+                        thinkingContainer.scrollTop = thinkingContainer.scrollHeight;
+
+                        if (statusBadge) {
+                            const thought = data.content.trim();
+                            if (thought) {
+                                statusBadge.innerHTML = `<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span></span><span class="truncate max-w-[200px]">PROCESSING: ${thought.substring(0, 20).replace(/\n/g, '')}...</span>`;
+                            }
+                        }
+                    } else if (data.type === 'content') {
+                        fullMarkdown += data.content;
+                        reportContent.innerHTML = marked.parse(fullMarkdown);
+                    } else if (data.type === 'phase') {
+                        if (data.content === 'analysis') {
+                            statusBadge.className = "px-4 py-2 rounded-lg bg-blue-500/5 text-blue-400 border border-blue-500/20 flex items-center gap-3 font-mono text-xs";
+                            statusBadge.innerHTML = `<i class="ri-file-text-line"></i><span>GENERATING_REPORT...</span>`;
+                        } else if (data.content === 'architecting') {
+                            statusBadge.className = "px-4 py-2 rounded-lg bg-purple-500/5 text-purple-400 border border-purple-500/20 flex items-center gap-3 font-mono text-xs";
+                            statusBadge.innerHTML = `<i class="ri-layout-masonry-line"></i><span>ARCHITECTING_BLUEPRINTS...</span>`;
+                        }
+                    } else if (data.type === 'blueprints_data') {
+                        try {
+                            let parsed = data.data;
+                            if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+                            const list = Array.isArray(parsed) ? parsed : (parsed.blueprints || []);
+
+                            // Save to LocalStorage
+                            localStorage.setItem('flux_research_data', JSON.stringify(list));
+
+                            currentBlueprints = list; // Store for later
+                            renderBlueprintsJSON(list);
+                        } catch (e) {
+                            console.error("Blueprint Parse Error", e);
                         }
                     }
-                    return;
-                }
-
-                if (data.type === 'content') {
-                    fullMarkdown += data.content;
-
-                    // Render Markdown
-                    reportContent.innerHTML = marked.parse(fullMarkdown);
-                }
-                else if (data.type === 'phase') {
-                    if (data.content === 'analysis') {
-                        statusBadge.className = "px-4 py-2 rounded-lg bg-blue-500/5 text-blue-400 border border-blue-500/20 flex items-center gap-3 font-mono text-xs";
-                        statusBadge.innerHTML = `<i class="ri-file-text-line"></i><span>GENERATING_REPORT_MATRIX...</span>`;
-                    } else if (data.content === 'architecting') {
-                        statusBadge.className = "px-4 py-2 rounded-lg bg-purple-500/5 text-purple-400 border border-purple-500/20 flex items-center gap-3 font-mono text-xs";
-                        statusBadge.innerHTML = `<i class="ri-layout-masonry-line"></i><span>Planning your code...</span>`;
-                    }
-                }
-                else if (data.type === 'blueprints_data') {
-                    // Render Blueprints from JSON
-                    try {
-                        console.log("🔹 Raw Blueprint Data String:", data.data);
-                        let parsed = data.data;
-                        if (typeof parsed === 'string') {
-                            parsed = JSON.parse(parsed);
-                        }
-
-                        // Handle nested "blueprints" key if the AI wrapped it
-                        const list = Array.isArray(parsed) ? parsed : (parsed.blueprints || []);
-
-                        console.log("🔹 Parsed Blueprints List:", list);
-                        renderBlueprintsJSON(list);
-                    } catch (e) {
-                        console.error("Blueprint Parse Error", e);
-                        blueprintsContainer.innerHTML = `<div class="text-red-500 text-xs p-4">JSON Parse Error: ${e.message}</div>`;
-                    }
-                }
-            },
-            (data) => {
-                isDone = true;
-                statusBadge.className = "px-4 py-2 rounded-lg bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 flex items-center gap-3 font-mono text-xs";
-                statusBadge.innerHTML = `<i class="ri-check-double-line"></i><span>ANALYSIS_COMPLETE</span>`;
-            },
-            (err) => {
-                console.error(err);
-                if (!isDone) {
-                    statusBadge.className = "px-4 py-2 rounded-lg bg-red-500/5 text-red-400 border border-red-500/20 flex items-center gap-3 font-mono text-xs";
-                    statusBadge.innerHTML = `<i class="ri-alarm-warning-line"></i><span>CONNECTION_LOST</span>`;
+                },
+                (data) => {
+                    isDone = true;
+                    btnRegenerate.disabled = false;
+                    btnRegenerate.classList.remove('opacity-50', 'cursor-not-allowed');
+                    statusBadge.className = "px-4 py-2 rounded-lg bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 flex items-center gap-3 font-mono text-xs";
+                    statusBadge.innerHTML = `<i class="ri-check-double-line"></i><span>ANALYSIS_COMPLETE</span>`;
+                },
+                (err) => {
+                    console.error(err);
+                    btnRegenerate.disabled = false;
+                    btnRegenerate.classList.remove('opacity-50', 'cursor-not-allowed');
                     app.toast('Stream interrupted', 'error');
                 }
+            );
+        };
+
+        // Initial Start
+        const savedBlueprints = localStorage.getItem('flux_research_data');
+        if (savedBlueprints) {
+            try {
+                const results = JSON.parse(savedBlueprints);
+                currentBlueprints = results;
+                renderBlueprintsJSON(results);
+
+                // Update UI to show completion state
+                statusBadge.className = "px-4 py-2 rounded-lg bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 flex items-center gap-3 font-mono text-xs";
+                statusBadge.innerHTML = `<i class="ri-check-double-line"></i><span>RESTORED_FROM_CACHE</span>`;
+
+                // Hide empty state loader if it exists
+                blueprintsContainer.innerHTML = '';
+                renderBlueprintsJSON(results);
+
+            } catch (e) {
+                console.error("Failed to parse saved blueprints", e);
+                localStorage.removeItem('flux_research_data');
+                startAnalysis();
             }
-        );
+        } else {
+            startAnalysis();
+        }
+
+        // Event Listeners
+        btnRegenerate.addEventListener('click', () => {
+            if (confirm("Regenerate ideas? This will clear current blueprints.")) {
+                localStorage.removeItem('flux_research_data');
+                startAnalysis();
+            }
+        });
+
+        // Modal Logic
+        btnCloseModal.addEventListener('click', () => modal.classList.add('hidden'));
+
+        btnAiAssist.addEventListener('click', async () => {
+            const desc = inpDesc.value.trim();
+            if (!desc) return app.toast('Please enter a description first', 'error');
+
+            btnAiAssist.innerHTML = `<i class="ri-loader-4-line animate-spin"></i> THINKING...`;
+
+            try {
+                const res = await fetch('/api/research/assist', {
+                    method: 'POST',
+                    headers: API.headers,
+                    body: JSON.stringify({ user_description: desc })
+                });
+                const data = await res.json();
+
+                inpTitle.value = data.suggested_title || '';
+                inpFeatures.value = (data.features || []).map(f => `- ${f}`).join('\n');
+
+                // Format tech stack as JSON for input
+                inpStack.value = JSON.stringify(data.tech_stack || [], null, 2);
+
+                app.toast('AI Suggestions Applied!', 'success');
+            } catch (err) {
+                console.error(err);
+                app.toast('AI Assist Failed', 'error');
+            } finally {
+                btnAiAssist.innerHTML = `<i class="ri-magic-line"></i> AI_SUGGEST_DETAILS`;
+            }
+        });
+
+        btnSaveCustom.addEventListener('click', async () => {
+            const title = inpTitle.value || "Custom Project";
+            const customBP = {
+                title: title,
+                tagline: inpTagline.value || "A custom defined project.",
+                problem: inpDesc.value || "Custom problem statement.",
+                solution: "Custom solution.",
+                complexity: "Variable",
+                tech_stack: []
+            };
+
+            // Try parse tech stack
+            try {
+                customBP.tech_stack = JSON.parse(inpStack.value || "[]");
+            } catch (e) {
+                // Fallback text parsing if they messed up JSON
+                customBP.tech_stack = [{ category: "Custom", technology: inpStack.value, reason: "User defined" }];
+            }
+
+            // Append to blueprints list
+            currentBlueprints.push(customBP);
+            const newIndex = currentBlueprints.length - 1;
+
+            localStorage.setItem(`project_${projectId}_custom_blueprint`, JSON.stringify(customBP));
+
+            if (confirm(`Initialize custom project "${title}"?`)) {
+                try {
+                    await API.selectBlueprint(projectId, -1);
+                    window.location.hash = `/project/${projectId}/planning`;
+                } catch (err) {
+                    console.error(err);
+                    app.toast("Failed to save selection", 'error');
+                }
+            }
+        });
 
         // Robust Blueprint Renderer
         function renderBlueprintsJSON(blueprints) {
@@ -273,6 +459,24 @@ export default {
                 });
                 container.appendChild(card);
             });
+
+            // Append "Custom Blueprint" Card (Static)
+            const customCard = document.createElement('div');
+            customCard.className = "group relative p-[1px] rounded-xl bg-gradient-to-br from-white/10 to-transparent hover:from-flux-500/50 transition-all duration-300 cursor-pointer border-dashed border border-white/20 hover:border-flux-500/50";
+            customCard.innerHTML = `
+                <div class="bg-transparent rounded-xl p-5 relative overflow-hidden flex flex-col items-center justify-center min-h-[250px] text-center">
+                    <div class="w-12 h-12 rounded-full bg-flux-500/10 flex items-center justify-center mb-4 group-hover:bg-flux-500/20 transition-colors">
+                        <i class="ri-pencil-ruler-2-line text-2xl text-flux-400"></i>
+                    </div>
+                    <h4 class="font-bold text-white mb-2">Build Custom Architecture</h4>
+                    <p class="text-xs text-gray-500 mb-4">Have your own idea? Define it manually and get AI assistance to fill in the technical details.</p>
+                    <span class="text-xs text-flux-300 font-bold border border-flux-500/30 px-3 py-1 rounded bg-flux-500/10 group-hover:bg-flux-500/20 transition-colors">OPEN STUDIO</span>
+                </div>
+            `;
+            customCard.addEventListener('click', () => {
+                document.getElementById('blueprint-modal').classList.remove('hidden');
+            });
+            container.appendChild(customCard);
         }
     }
 };

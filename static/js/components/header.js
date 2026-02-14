@@ -23,6 +23,12 @@ export default {
 
                 <!-- Right Side Actions -->
                 <div class="flex items-center gap-4">
+                    <!-- New Project Button -->
+                     <button onclick="window.FluxApp.startNewProject()" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-flux-500/10 hover:bg-flux-500/20 text-flux-500 hover:text-flux-400 border border-flux-500/20 transition-all text-xs font-bold uppercase tracking-wider">
+                        <i class="ri-add-line"></i>
+                        <span>New Project</span>
+                    </button>
+
                     <!-- Theme Toggle -->
                     <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                         <i class="ri-moon-line text-gray-600 dark:text-gray-300 dark:hidden"></i>

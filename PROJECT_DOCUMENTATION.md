@@ -1,12 +1,12 @@
 # 🌌 Flux: Technical Specifications & Documentation
 
 ## 📌 Overview
-**Flux** is an advanced AI Project Architect designed to transform raw product ideas into professional-grade technical documentation. It streamlines the software development lifecycle by automating the generation of Market Gap Analyses, PRDs, System Requirement Specifications (SRS), and implementation Roadmaps.
+**Flux** is an intelligent AI Project Mentor designed to guide students and beginners from a raw idea to a fully scaffolded codebase. It acts as a "Senior Developer" companion, automating market research, generating educational project blueprints, and producing professional technical documentation (PRDs, Roadmaps) with a focus on learning and clarity.
 
 ---
 
 ## 🎨 Design System: "The Flux Theme"
-The application adheres to a **Cyber-minimalist, Deep Space, and Glassmorphism** aesthetic.
+The application adheres to a **Cyber-minimalist, Deep Space, and Glassmorphism** aesthetic, designed to feel futuristic yet accessible.
 - **Color Palette**: 
   - `dark-bg`: Slate-950 (#020617)
   - `flux-accent`: Gradient from Violet-500 (#8b5cf6) to Cyan-400 (#22d3ee)
@@ -19,20 +19,24 @@ The application adheres to a **Cyber-minimalist, Deep Space, and Glassmorphism**
 ## 🚀 Core Features
 
 ### 1. The Vault (Dashboard)
-- **Centralized project management** for all generated blueprints.
-- **Interactive Project Cards**: Featuring glassmorphism, status badges, and hover-triggered actions (Open/Delete).
-- **Rename Functionality**: Inline renaming of project titles directly from the vault or within the project view.
+- **Centralized Project Hub**: Manage all your ideas in one place.
+- **Interactive Project Cards**: Featuring glassmorphism, status badges, and hover-triggered actions.
+- **Rename Functionality**: Inline renaming of project titles directly from the vault.
 
-### 2. AI Architect (Ideation & Research)
-- **Dual-Entry Ideation**: Support for "Freestyle" prompts or "Guided" category selection (e.g., E-commerce, SaaS, AI Tool).
-- **Deep Gap Analysis**: Analyzes market landscape, identifies critical gaps, and proposes 3 unique project blueprints.
-- **Citation Protocol**: Every AI generation includes a mandatory "References & Analysis Sources" section, citing user context and simulated market standards.
-- **Emoji-Free Output**: Strict constraints ensure a professional technical tone suitable for enterprise-grade documents.
+### 2. Idea Explorer (Research)
+- **Agentic RAG**: Uses **DuckDuckGo** to perform real-time, live web searches to ground ideas in current market data.
+- **Mentor Persona**: The AI adopts a friendly, encouraging tone, explaining technical jargon in simple terms.
+- **Educational Blueprints**: Generates 3 unique "Starter Ideas" (Blueprints).
+- **"Why This Stack?"**: Every recommended technology includes a specific reason (e.g., "React is great for beginners due to its community") to help students learn.
 
-### 3. Planning Suite (Technical Viewer)
-- **Sidebar-driven Document Viewer**: Seamlessly switch between Roadmap, PRD, SRS, and `.cursorrules`.
-- **technical Schematic Aesthetic**: Document content is rendered with clean typography and code blocks optimized for developer readability.
-- **Export Ready**: Tools for copying content to the clipboard and (planned) file exports.
+### 3. Improvement Ideas (Planning)
+- **Sidebar-driven Document Viewer**: Seamlessly switch between Improvement Ideas (Roadmap), Product Plan (PRD), Step-by-Step Logic (SRS), and AI Instructions (`.cursorrules`).
+- **Refinement Toolbar**: Highlight any text to ask the AI to rewrite, simplify, or expand it.
+- **Plan-to-Code Bridge**: A dedicated "Send to Code Generator" button that transfers your selected plan directly to the scaffold engine.
+
+### 4. Code Generator (The Forge)
+- **Context-Aware Scaffolding**: Generates a non-generic project skeleton based *exactly* on your selected Blueprint's tech stack and database schema.
+- **One-Click Download**: Zips the entire generated codebase for immediate download and local use.
 
 ---
 
@@ -42,6 +46,7 @@ The application adheres to a **Cyber-minimalist, Deep Space, and Glassmorphism**
 - **FastAPI**: High-performance async API framework.
 - **aiomysql**: Asynchronous connection pooling for MySQL database.
 - **OpenAI/LongCat SDK**: Handles streaming completions using `Flash-Thinking` and `Flash-Chat` models.
+- **DuckDuckGo Search**: For real-time, agentic web research.
 - **SSE (Server-Sent Events)**: Provides real-time "Thinking" and "Content" streams to the frontend.
 - **JWT Authentication**: Secure user sessions with Bcrypt password hashing.
 
@@ -49,7 +54,7 @@ The application adheres to a **Cyber-minimalist, Deep Space, and Glassmorphism**
 - **Zero-Build SPA**: Pure HTML/JS/CSS without heavy bundlers for maximum speed and simplicity.
 - **Tailwind CSS 3.x**: Utility-first styling with a custom "Flux" theme configuration.
 - **Custom Router**: Client-side hashing for seamless view transitions.
-- **SSE Parser**: Robust buffer-based stream reader for handling real-time AI increments.
+- **Markdown Rendering**: Uses `marked.js` with specific configurations for code blocks and Mermaid diagrams.
 
 ---
 
@@ -63,10 +68,11 @@ The application adheres to a **Cyber-minimalist, Deep Space, and Glassmorphism**
 
 ### `api/` (Backend Logic)
 - **`index.py`**: Main application router and core API endpoints.
-- **`ai_engine.py`**: AI prompt management, citation protocols, and stream generators.
+- **`ai_engine.py`**: AI prompt management, Mentor persona, citation protocols, and stream generators.
+- **`agent_search.py`**: Module for executing live web searches via DuckDuckGo.
 - **`db.py`**: MySQL database layer (CRUD operations, connection pool).
 - **`auth.py`**: JWT token logic, password security, and dependency injection.
-- **`models.py`**: Pydantic models for request validation and response schemas.
+- **`models.py`**: Pydantic models, including the new `TechStackItem` with educational reasons.
 
 ### `static/` (Frontend SPA)
 - **`index.html`**: Entry point and Tailwind/Theme configuration.
@@ -75,9 +81,10 @@ The application adheres to a **Cyber-minimalist, Deep Space, and Glassmorphism**
 - **`js/views/`**:
   - `auth.js`: Login/Registration with glass cards.
   - `dashboard.js`: The "Vault" project grid logic.
-  - `ideation.js`: Idea capturing and category selection.
-  - `research.js`: Real-time streaming research and blueprint selection.
-  - `planning.js`: Advanced technical document viewer with sidebar.
+  - `idetaion.js`: Idea capturing and category selection.
+  - `research.js`: "Idea Explorer" with real-time streaming and educational blueprint cards.
+  - `planning.js`: "Improvement Ideas" viewer with refinement tools and Plan-to-Code bridge.
+  - `forge.js`: "Code Generator" for scaffolding projects.
 - **`js/components/`**: Reusable UI elements like `card.js` and `header.js`.
 
 ---
@@ -96,4 +103,4 @@ The application adheres to a **Cyber-minimalist, Deep Space, and Glassmorphism**
 4. **Access**: Open `http://localhost:8000` in your browser.
 
 ---
-*Documentation generated on 2026-02-11.*
+*Documentation updated to reflect Student-First UX overhaul.*

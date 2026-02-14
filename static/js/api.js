@@ -167,17 +167,28 @@ export const API = {
         this.streamWithFetch(url, token, onChunk, onDone, onError);
     },
 
-    streamDoc(projectId, docType, onChunk, onDone, onError) {
+    streamDoc(projectId, docType, context, onChunk, onDone, onError) {
         const token = this.getToken();
         const url = `${API_BASE}/projects/${projectId}/plan/stream/${docType}`;
-        this.streamWithFetch(url, token, onChunk, onDone, onError);
+
+        // Use Fetch with POST to send context body
+        this.streamWithFetch(url, token, onChunk, onDone, onError, {
+            method: 'POST',
+            body: JSON.stringify({ context })
+        });
     },
 
-    async streamWithFetch(url, token, onChunk, onDone, onError) {
+    async streamWithFetch(url, token, onChunk, onDone, onError, options = {}) {
         try {
-            const response = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const fetchOptions = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                ...options
+            };
+
+            const response = await fetch(url, fetchOptions);
 
             if (!response.ok) throw new Error(response.statusText);
 
