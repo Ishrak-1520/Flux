@@ -16,7 +16,8 @@ from typing import Optional
 from . import db, auth, ai_engine
 from .models import (
     RegisterRequest, LoginRequest, ProjectCreate, 
-    IdeationRequest, BlueprintSelect, DocType, ProjectUpdate, BlueprintAssistRequest
+    IdeationRequest, BlueprintSelect, DocType, ProjectUpdate, BlueprintAssistRequest,
+    TechStackSuggestRequest
 )
 
 app = FastAPI(title="Flux API", version="1.0.0")
@@ -376,6 +377,18 @@ async def assist_blueprint(req: BlueprintAssistRequest, user_id: int = Depends(a
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+@app.post("/api/suggest-tech-stack")
+async def suggest_tech_stack(req: TechStackSuggestRequest, user_id: int = Depends(auth.get_current_user)):
+    """
+    Analyzes the user's project vision and recommends appropriate technologies.
+    """
+    try:
+        suggestions = await ai_engine.suggest_tech_stack(req.vision)
+        return suggestions
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 class RefineRequest(BaseModel):

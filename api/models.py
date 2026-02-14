@@ -95,4 +95,7 @@ class BlueprintAssistRequest(BaseModel):
     user_description: str
 
 
+# ─── Tech Stack Suggestion ──────────────────────────────────
 
+class TechStackSuggestRequest(BaseModel):
+    vision: str

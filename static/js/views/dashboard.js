@@ -81,7 +81,7 @@ const renderCard = (project) => {
 
     // Click handler (Main Card)
     const openAction = () => {
-        let route = `/project/${project.id}/ideation`; // default
+        let route = `/project/${project.id}/setup`; // New projects go to setup wizard
         if (project.status === 'research') route = `/project/${project.id}/research`;
         if (project.status === 'planning' || project.status === 'complete') route = `/project/${project.id}/planning`;
         window.location.hash = route;
@@ -191,18 +191,16 @@ export default {
                 </div>
 
                 <!-- Empty State (hidden by default) -->
-                <div id="empty-state" class="hidden flex flex-col items-center justify-center py-32 text-center rounded-3xl border border-dashed border-white/10 bg-white/5">
-                    <div class="relative w-24 h-24 mb-6">
-                        <div class="absolute inset-0 bg-violet-500/20 rounded-full blur-xl animate-pulse"></div>
-                        <div class="relative bg-slate-900 border border-white/10 w-full h-full rounded-full flex items-center justify-center">
-                            <i class="ri-folder-add-line text-4xl text-gray-500"></i>
-                        </div>
+                <div id="empty-state" class="hidden empty-state flex-col items-center justify-center py-32 text-center rounded-3xl border border-dashed border-white/10 bg-white/5">
+                    <div class="relative w-32 h-32 mb-8">
+                        <div class="absolute inset-0 bg-violet-500/20 rounded-full blur-2xl animate-pulse"></div>
+                        <i class="ri-rocket-2-line text-8xl text-violet-500/40 relative z-10"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-3">Void Detected</h3>
-                    <p class="text-gray-400 mb-8 max-w-md mx-auto">The vault is currently empty. Initialize a new sequence to begin generating blueprints.</p>
+                    <h3 class="text-2xl font-bold text-white mb-3">Launch Your First Project</h3>
+                    <p class="text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">Transform your vision into reality. Start by creating a new project and let Flux guide you through the entire development journey.</p>
                     
-                    <button id="empty-new-btn" class="px-6 py-2 rounded-lg border border-white/10 hover:bg-white/5 text-gray-300 hover:text-white transition-colors text-sm font-mono uppercase tracking-wider">
-                        Initialize Project
+                    <button id="empty-new-btn" class="px-8 py-3 rounded-lg bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white transition-all text-sm font-semibold shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 hover:scale-105">
+                        <i class="ri-add-line mr-2"></i>Create New Project
                     </button>
                 </div>
             </div>
@@ -212,18 +210,17 @@ export default {
         const emptyState = container.querySelector('#empty-state');
 
         // New Project Handler
-        const goToIdeation = async () => {
+        const goToSetup = async () => {
             try {
-                // Determine styling for toast
                 const project = await API.createProject({ title: "New Project", original_prompt: "" });
-                window.location.hash = `/project/${project.id}/ideation`; // Redirect to ideation
+                window.location.hash = `/project/${project.id}/setup`; // Redirect to setup wizard
             } catch (err) {
                 app.toast(err.message, 'error');
             }
         };
 
-        container.querySelector('#new-project-btn').addEventListener('click', goToIdeation);
-        container.querySelector('#empty-new-btn').addEventListener('click', goToIdeation);
+        container.querySelector('#new-project-btn').addEventListener('click', goToSetup);
+        container.querySelector('#empty-new-btn').addEventListener('click', goToSetup);
 
         // Load Projects
         try {

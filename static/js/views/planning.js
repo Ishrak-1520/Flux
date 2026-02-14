@@ -88,6 +88,10 @@ export default {
                     <div class="flex-1 overflow-y-auto p-8 relative">
                          <!-- Toolbar -->
                          <div class="absolute top-4 right-8 flex gap-2 z-10">
+                            <button id="view-toggle-btn" class="p-2 rounded-lg bg-white/5 border border-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors" title="Toggle View">
+                                <i class="ri-layout-grid-line" id="icon-kanban"></i>
+                                <i class="ri-list-check-2 hidden" id="icon-list"></i>
+                            </button>
                             <button id="regen-btn" class="p-2 rounded-lg bg-white/5 border border-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors" title="Regenerate">
                                 <i class="ri-refresh-line"></i>
                             </button>
@@ -122,6 +126,8 @@ export default {
 
         let activeDoc = 'roadmap';
         const docCache = {};
+        let viewMode = 'list'; // 'list' or 'kanban' (Moved up to fix initialization error)
+
         const docTitles = {
             'roadmap': 'Improvement Ideas',
             'prd': 'Product Plan (PRD)',
@@ -132,7 +138,7 @@ export default {
         // Initialize State with LocalStorage
         let localDocCache = {};
 
-        // --- Configure Mermaid & Marked ---
+        // Initialize Mermaid
         if (window.mermaid) {
             window.mermaid.initialize({
                 startOnLoad: false,
@@ -150,7 +156,7 @@ export default {
         const originalCodeRenderer = renderer.code.bind(renderer);
 
         renderer.code = function (code, language) {
-            if (language === 'mermaid') {
+            if (language && language.trim().toLowerCase() === 'mermaid') {
                 const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
                 return `<div class="mermaid" id="${id}">${code}</div>`;
             }
@@ -161,14 +167,19 @@ export default {
 
         async function renderDiagrams() {
             if (!window.mermaid) return;
+
+            // Re-select all .mermaid elements that haven't been processed
+            const diagrams = document.querySelectorAll('.mermaid:not([data-processed="true"])');
+            if (diagrams.length === 0) return;
+
             try {
                 await window.mermaid.run({
-                    querySelector: '.mermaid'
+                    nodes: diagrams
                 });
             } catch (err) {
                 console.error("Mermaid Render Error:", err);
                 // Find broken diagrams
-                document.querySelectorAll('.mermaid').forEach(el => {
+                diagrams.forEach(el => {
                     if (!el.querySelector('svg')) {
                         el.innerHTML = `<div class="p-4 bg-red-50 border border-red-200 text-red-600 rounded">
                             <p class="font-bold text-xs mb-2">⚠️ Diagram Syntax Error</p>
@@ -194,6 +205,34 @@ export default {
         Object.keys(docTitles).forEach(key => {
             docCache[key] = localDocCache[key] || '';
         });
+
+        // View Toggle Logic
+        const viewToggleBtn = container.querySelector('#view-toggle-btn');
+        const iconKanban = container.querySelector('#icon-kanban');
+        const iconList = container.querySelector('#icon-list');
+
+        if (viewToggleBtn) {
+            viewToggleBtn.addEventListener('click', () => {
+                viewMode = viewMode === 'list' ? 'kanban' : 'list';
+
+                // Toggle icons
+                if (viewMode === 'kanban') {
+                    iconKanban.classList.add('hidden');
+                    iconList.classList.remove('hidden');
+                    viewToggleBtn.title = "Switch to List View";
+                } else {
+                    iconKanban.classList.remove('hidden');
+                    iconList.classList.add('hidden');
+                    viewToggleBtn.title = "Switch to Board View";
+                }
+
+                // Re-render
+                if (docCache['roadmap']) {
+                    renderContent(docCache['roadmap'], 'roadmap');
+                }
+            });
+        }
+
 
         // --- Start of Task 3 Rename Logic ---
         titleHeader.addEventListener('click', () => {
@@ -329,6 +368,149 @@ export default {
             });
         });
 
+        // ─── Kanban Board Functions ──────────────────────────────────
+
+        /**
+         * Parse markdown roadmap into structured Kanban data
+         */
+        function parseRoadmapToKanban(markdownText) {
+            const lines = markdownText.split('\n');
+            const phases = [];
+            let currentPhase = null;
+            let currentTask = null;
+
+            for (const line of lines) {
+                // Match phase headers: ## Phase Name
+                const phaseMatch = line.match(/^##\s+(.+)/);
+                if (phaseMatch) {
+                    const phaseName = phaseMatch[1].trim();
+                    currentPhase = {
+                        name: phaseName,
+                        tasks: []
+                    };
+                    phases.push(currentPhase);
+                    currentTask = null;
+                    continue;
+                }
+
+                // Match main tasks: - [ ] Task or - [x] Task
+                const taskMatch = line.match(/^[-*]\s+\[([ x])\]\s+(.+)/);
+                if (taskMatch && currentPhase) {
+                    currentTask = {
+                        done: taskMatch[1] === 'x',
+                        text: taskMatch[2].trim(),
+                        subtasks: []
+                    };
+                    currentPhase.tasks.push(currentTask);
+                    continue;
+                }
+
+                // Match subtasks: spaces/tabs then - [ ] or - [x]
+                const subtaskMatch = line.match(/^\s+[-*]\s+\[([ x])\]\s+(.+)/);
+                if (subtaskMatch && currentTask) {
+                    currentTask.subtasks.push({
+                        done: subtaskMatch[1] === 'x',
+                        text: subtaskMatch[2].trim()
+                    });
+                }
+            }
+
+            return phases;
+        }
+
+        /**
+         * Render a single task card
+         */
+        function renderTaskCard(task) {
+            const statusColor = task.done ? 'green' : 'violet';
+            const statusText = task.done ? 'Done' : 'To Do';
+            const completedSubtasks = task.subtasks.filter(st => st.done).length;
+            const totalSubtasks = task.subtasks.length;
+
+            return `
+                <div class="task-card glass-panel bg-slate-900/40 p-4 rounded-xl border border-white/5 hover:border-${statusColor}-500/30 transition-all group">
+                    <!-- Status and Drag Handle -->
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-${statusColor}-500/10 text-${statusColor}-400 border border-${statusColor}-500/20">
+                            ${statusText}
+                        </span>
+                        <i class="ri-drag-move-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </div>
+                    
+                    <!-- Task Text -->
+                    <div class="text-sm text-gray-300 leading-relaxed">
+                        ${task.text}
+                    </div>
+                    
+                    <!-- Subtasks Progress -->
+                    ${totalSubtasks > 0 ? `
+                        <div class="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
+                            <span class="text-gray-500">${completedSubtasks}/${totalSubtasks} subtasks</span>
+                            <div class="flex-1 mx-3 h-1 bg-slate-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-${statusColor}-500 transition-all" style="width: ${(completedSubtasks / totalSubtasks) * 100}%"></div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        /**
+         * Render complete Kanban board
+         */
+        function renderKanbanBoard(phases) {
+            if (!phases || phases.length === 0) {
+                return `
+                    <div class="flex items-center justify-center py-20 text-gray-500">
+                        <div class="text-center">
+                            <i class="ri-layout-grid-line text-4xl mb-3 opacity-30"></i>
+                            <p class="text-sm">No phases found in roadmap</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="kanban-container overflow-x-auto pb-6 -mx-4">
+                    <div class="flex gap-6 min-w-max px-4">
+                        ${phases.map(phase => {
+                const completedTasks = phase.tasks.filter(t => t.done).length;
+                const totalTasks = phase.tasks.length;
+                const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+                return `
+                                <div class="phase-column w-80 flex-shrink-0">
+                                    <!-- Phase Header -->
+                                    <div class="glass-panel bg-slate-900/60 p-4 rounded-t-2xl border-b border-white/5 sticky top-0 z-10">
+                                        <h3 class="text-sm font-bold text-white mb-2">${phase.name}</h3>
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                                <div class="h-full bg-gradient-to-r from-flux-500 to-cyan-500 transition-all" style="width: ${progress}%"></div>
+                                            </div>
+                                            <span class="text-xs text-gray-500 font-mono">${completedTasks}/${totalTasks}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Task Cards -->
+                                    <div class="task-list space-y-3 p-4 bg-slate-950/30 rounded-b-2xl min-h-[400px]">
+                                        ${phase.tasks.map(task => renderTaskCard(task)).join('')}
+                                        ${totalTasks === 0 ? `
+                                            <div class="empty-state text-center py-12">
+                                                <i class="ri-rocket-2-line text-6xl text-violet-500/30 mb-4 block"></i>
+                                                <p class="text-gray-500 text-xs font-medium">No tasks in this phase</p>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            `;
+            }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ─── Toolbar Actions ─────────────────────────────────────────
+
         // Toolbar Actions
         container.querySelector('#regen-btn').addEventListener('click', () => {
             if (confirm("Regenerate this document?")) {
@@ -347,6 +529,10 @@ export default {
         function renderContent(content, type) {
             if (type === 'cursorrules') {
                 docContent.innerHTML = `<pre class="font-mono text-xs text-green-400 bg-black/40 p-4 rounded-lg border border-white/5 overflow-x-auto">${content}</pre>`;
+            } else if (type === 'roadmap' && viewMode === 'kanban') {
+                // Kanban view for roadmap
+                const phases = parseRoadmapToKanban(content);
+                docContent.innerHTML = renderKanbanBoard(phases);
             } else {
                 docContent.innerHTML = marked.parse(content);
 

@@ -13,16 +13,19 @@ import ResearchView from './views/research.js';
 import PlanningView from './views/planning.js';
 import ExportView from './views/export.js';
 import ForgeView from './views/forge.js';
+import SetupView from './views/setup.js';
 
 // Import Components
 import Header from './components/header.js';
+import HUD from './components/hud.js';
 
 const app = {
     // Application State
     state: {
         user: null,
         currentProject: null,
-        theme: localStorage.getItem('theme') || 'dark'
+        theme: localStorage.getItem('theme') || 'dark',
+        zenMode: false
     },
 
     // Routes Definition
@@ -30,6 +33,7 @@ const app = {
         '/login': AuthView,
         '/register': AuthView,
         '/dashboard': DashboardView,
+        '/project/:id/setup': SetupView,
         '/project/:id/ideation': IdeationView,
         '/project/:id/research': ResearchView,
         '/project/:id/planning': PlanningView,
@@ -48,6 +52,8 @@ const app = {
         if (token) {
             try {
                 this.state.user = await API.getMe();
+                // Mount HUD if logged in
+                this.mountHUD();
             } catch (e) {
                 console.log("Auth check failed", e);
             }
@@ -55,7 +61,56 @@ const app = {
 
         // Handle routing
         window.addEventListener('hashchange', () => this.handleRoute());
+
+        // Global Keyboard Shortcuts
+        window.addEventListener('keydown', (e) => {
+            // Alt + Z = Zen Mode
+            if (e.altKey && e.code === 'KeyZ') {
+                e.preventDefault();
+                this.toggleZenMode();
+            }
+        });
+
+        // Listen for HUD toggle event
+        window.addEventListener('flux-toggle-zen', () => {
+            this.toggleZenMode();
+        });
+
         this.handleRoute(); // Initial load
+    },
+
+    /**
+     * Zen Mode Handler
+     */
+    toggleZenMode() {
+        this.state.zenMode = !this.state.zenMode;
+        this.applyZenMode();
+
+        // Notify HUD/Components
+        window.dispatchEvent(new CustomEvent('flux-zen-changed', {
+            detail: { active: this.state.zenMode }
+        }));
+
+        this.toast(this.state.zenMode ? 'Zen Mode: Focus ON' : 'Zen Mode: Focus OFF', 'info');
+    },
+
+    applyZenMode() {
+        const body = document.body;
+        if (this.state.zenMode) {
+            body.classList.add('zen-mode');
+        } else {
+            body.classList.remove('zen-mode');
+        }
+    },
+
+    /**
+     * Mount HUD
+     */
+    mountHUD() {
+        const container = document.getElementById('hud-container');
+        if (container) {
+            HUD.mount(container);
+        }
     },
 
     /**

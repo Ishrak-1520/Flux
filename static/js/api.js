@@ -178,7 +178,19 @@ export const API = {
         });
     },
 
+    /**
+     * AI Suggestion Methods
+     */
+    async suggestTechStack(vision) {
+        return await this.post('/suggest-tech-stack', { vision });
+    },
+
     async streamWithFetch(url, token, onChunk, onDone, onError, options = {}) {
+        // Global Start Event
+        window.dispatchEvent(new CustomEvent('flux-stream-start', {
+            detail: { url, label: options.label || 'Flux Processing...' }
+        }));
+
         try {
             const fetchOptions = {
                 headers: {
@@ -195,6 +207,7 @@ export const API = {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let buffer = '';
+            let processedChunks = 0;
 
             while (true) {
                 const { value, done } = await reader.read();
@@ -219,10 +232,20 @@ export const API = {
                     if (rawData.startsWith('{') || rawData.startsWith('[')) {
                         try {
                             const data = JSON.parse(rawData);
+
+                            // Emit Progress Event (Artificial calculation for UI feedback)
+                            processedChunks++;
+                            const progress = Math.min(processedChunks * 2, 95); // Scale loosely
+                            window.dispatchEvent(new CustomEvent('flux-stream-progress', {
+                                detail: { progress, label: (data.type === 'thinking' ? '💡 Thinking...' : '📝 Writing...') }
+                            }));
+
                             if (data.type === 'done') {
+                                window.dispatchEvent(new CustomEvent('flux-stream-end'));
                                 if (onDone) onDone(data);
                                 return; // Stop processing
                             } else if (data.type === 'error') {
+                                window.dispatchEvent(new CustomEvent('flux-stream-end'));
                                 if (onError) onError(new Error(data.content));
                                 return; // Stop processing
                             } else {
@@ -235,9 +258,11 @@ export const API = {
                 }
             }
             // Fallback done if stream ends without explicit done message
+            window.dispatchEvent(new CustomEvent('flux-stream-end'));
             if (onDone) onDone();
 
         } catch (err) {
+            window.dispatchEvent(new CustomEvent('flux-stream-end'));
             console.error("Stream Error:", err);
             if (onError) onError(err);
         }

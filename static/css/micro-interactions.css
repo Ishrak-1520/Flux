@@ -1,0 +1,145 @@
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 4: SCI-FI DASHBOARD MICRO-INTERACTIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Universal Card Hover Effects */
+.glass-panel:hover,
+.card:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 12px 40px rgba(139, 92, 246, 0.15);
+}
+
+/* Blueprint Cards - Violet Glow for Active/Suggested */
+.blueprint-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.blueprint-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+    border-color: rgba(139, 92, 246, 0.6);
+}
+
+.blueprint-card.selected {
+    box-shadow: 0 0 25px rgba(34, 211, 238, 0.5);
+    border-color: rgba(34, 211, 238, 0.7);
+}
+
+/* Tech Stack Cards - Enhanced Tactile Feedback */
+.tech-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tech-card:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.tech-card.selected {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+    border-color: rgba(34, 211, 238, 0.6);
+}
+
+/* Task Cards - Color-Coded Status Glows */
+.task-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.task-card:hover {
+    transform: translateY(-2px) scale(1.01);
+}
+
+/* Green Glow - Completed Tasks */
+.task-card[data-status="done"]:hover,
+.task-card.done:hover {
+    box-shadow: 0 0 25px rgba(34, 197, 94, 0.4), 0 4px 16px rgba(0, 0, 0, 0.2);
+    border-color: rgba(34, 197, 94, 0.6);
+}
+
+.task-card[data-status="done"],
+.task-card.done {
+    border-color: rgba(34, 197, 94, 0.3);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
+}
+
+/* Violet Glow - Active/In-Progress Tasks */
+.task-card[data-status="active"]:hover,
+.task-card.active:hover {
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.5), 0 4px 16px rgba(0, 0, 0, 0.2);
+    border-color: rgba(139, 92, 246, 0.7);
+}
+
+.task-card[data-status="active"],
+.task-card.active {
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+}
+
+/* Gray/Dim - Future Tasks */
+.task-card[data-status="future"],
+.task-card.future {
+    opacity: 0.5;
+    filter: grayscale(0.4);
+}
+
+.task-card[data-status="future"]:hover,
+.task-card.future:hover {
+    opacity: 0.7;
+    filter: grayscale(0.2);
+    box-shadow: 0 0 15px rgba(148, 163, 184, 0.2);
+}
+
+/* Project Cards (Dashboard) */
+.project-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.project-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.3), 0 12px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Button Hover Enhancements */
+button:not(.no-hover):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+
+/* Empty State Icons - Subtle Pulse */
+.empty-state i,
+.empty-state svg {
+    animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+
+    0%,
+    100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.05);
+    }
+}

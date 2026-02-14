@@ -418,3 +418,61 @@ async def suggest_blueprint_details(user_description: str):
                 {"category": "Frontend", "technology": "HTML/CSS/JS", "reason": "Standard web technologies."}
             ]
         }
+
+
+async def suggest_tech_stack(vision: str) -> dict:
+    """
+    Analyzes project vision and suggests appropriate technologies.
+    Returns a dict with recommended tech stack items.
+    """
+    try:
+        prompt = f"""{MENTOR_PERSONA}
+
+Based on this project idea, recommend the best technologies for a beginner to use:
+
+"{vision}"
+
+Return ONLY a valid JSON object (no markdown decorators) in this exact format:
+{{
+  "frontend": [
+    {{"name": "Node", "reason": "Most popular, huge community, easy to learn"}}
+  ],
+  "backend": [
+    {{"name": "FastAPI", "reason": "Python-based, super fast, automatic API docs"}}
+  ],
+  "database": [
+    {{"name": "PostgreSQL", "reason": "Free, powerful, handles complex data well"}}
+  ]
+}}
+
+RULES:
+1. Pick 1-2 technologies per category
+2. Focus on beginner-friendly options
+3. Match the complexity to the project idea
+4. Explain WHY each tech is good for this specific project
+5. Return ONLY the JSON, no "```json" markers or extra text
+"""
+
+        response = await client.chat.completions.create(
+            model=MODEL_CHAT,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=800
+        )
+
+        result_text = response.choices[0].message.content.strip()
+        
+        # Remove markdown code blocks if present
+        if result_text.startswith("```"):
+            result_text = result_text.split("```")[1]
+            if result_text.startswith("json"):
+                result_text = result_text[4:]
+            result_text = result_text.strip()
+        
+        suggestions = json.loads(result_text)
+        return suggestions
+        
+    except Exception as e:
+        print(f"Tech Stack Suggestion Error: {e}")
+        print(f"Raw response: {result_text if 'result_text' in locals() else 'N/A'}")
+        raise
