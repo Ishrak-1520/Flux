@@ -1,24 +1,203 @@
-/* Glassmorphism & Utilities */
-.glass {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+/* ═══════════════════════════════════════════════════════════════
+   THEME VARIABLES (Perplexity Light + Claude Dark)
+   ═══════════════════════════════════════════════════════════════ */
+
+@layer base {
+    :root {
+        /* LIGHT MODE (Perplexity Comet Style) */
+        --bg-main: #ffffff;
+        --bg-card: #f9f9f9;
+        --bg-sidebar: #f3f3f3;
+
+        --text-primary: #191919;
+        --text-secondary: #595959;
+        --text-muted: #8e8e8e;
+
+        --border-light: #e0e0e0;
+
+        --accent-main: #20808D;
+        --accent-hover: #165b65;
+    }
+
+    .dark {
+        /* DARK MODE (Claude Code Style) */
+        --bg-main: #131316;
+        --bg-card: #1C1C21;
+        --bg-sidebar: #0f0f12;
+
+        --text-primary: #EDEDED;
+        --text-secondary: #9CA3AF;
+        --text-muted: #4B5563;
+
+        --border-light: #2E2E33;
+
+        --accent-main: #D97757;
+        --accent-hover: #b56348;
+    }
+
+    body {
+        background-color: var(--bg-main);
+        color: var(--text-primary);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
 }
 
-.dark .glass {
-    background: rgba(30, 41, 59, 0.7);
-    /* slate-800 with opacity */
-    border: 1px solid rgba(255, 255, 255, 0.05);
+/* ═══════════════════════════════════════════════════════════════
+   SEMANTIC UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Background Colors */
+.bg-bg-main {
+    background-color: var(--bg-main) !important;
 }
 
-.glass-panel {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+.bg-bg-card {
+    background-color: var(--bg-card) !important;
+}
+
+.bg-bg-sidebar {
+    background-color: var(--bg-sidebar) !important;
+}
+
+/* Text Colors */
+.text-text-primary {
+    color: var(--text-primary) !important;
+}
+
+.text-text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+.text-text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* Border Colors */
+.border-border-light {
+    border-color: var(--border-light) !important;
+}
+
+/* Accent Colors */
+.bg-accent {
+    background-color: var(--accent-main) !important;
+}
+
+.text-accent {
+    color: var(--accent-main) !important;
+}
+
+.border-accent {
+    border-color: var(--accent-main) !important;
+}
+
+/* Accent with Opacity */
+.bg-accent\/5 {
+    background-color: color-mix(in srgb, var(--accent-main) 5%, transparent) !important;
+}
+
+.bg-accent\/10 {
+    background-color: color-mix(in srgb, var(--accent-main) 10%, transparent) !important;
+}
+
+.bg-accent\/20 {
+    background-color: color-mix(in srgb, var(--accent-main) 20%, transparent) !important;
+}
+
+.border-accent\/20 {
+    border-color: color-mix(in srgb, var(--accent-main) 20%, transparent) !important;
+}
+
+.border-accent\/30 {
+    border-color: color-mix(in srgb, var(--accent-main) 30%, transparent) !important;
+}
+
+.shadow-accent\/20 {
+    box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--accent-main) 20%, transparent) !important;
+}
+
+/* Error Color */
+.bg-error {
+    background-color: #ef4444 !important;
+}
+
+.text-error {
+    color: #ef4444 !important;
+}
+
+/* Success Color */
+.bg-emerald-500 {
+    background-color: #10b981 !important;
+}
+
+.text-emerald-500 {
+    color: #10b981 !important;
+}
+
+.bg-emerald-500\/10 {
+    background-color: color-mix(in srgb, #10b981 10%, transparent) !important;
+}
+
+.border-emerald-500\/20 {
+    border-color: color-mix(in srgb, #10b981 20%, transparent) !important;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: var(--accent-main);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--accent-main) 30%, transparent);
+}
+
+.btn-secondary {
+    background-color: var(--bg-sidebar);
+    color: var(--text-primary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    border: 1px solid var(--border-light);
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-card);
+    border-color: var(--accent-main);
+}
+
+/* Mermaid Diagram Container */
+.mermaid {
+    background-color: var(--bg-card);
     padding: 1.5rem;
-    /* Enhanced padding for breathing room */
+    border-radius: 0.75rem;
+    overflow-x: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.mermaid svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Solid Card Panels (Replacing Glassmorphism) */
+.glass-panel,
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-light);
+    padding: 1.5rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -63,19 +242,23 @@
 
 /* Markdown Content Styling */
 .prose-custom h1 {
-    @apply text-2xl font-bold mb-4 text-flux-600 dark:text-flux-400;
+    @apply text-2xl font-serif font-bold mb-4;
+    color: var(--text-primary);
 }
 
 .prose-custom h2 {
-    @apply text-xl font-semibold mt-6 mb-3 text-gray-800 dark:text-gray-200;
+    @apply text-xl font-serif font-semibold mt-6 mb-3;
+    color: var(--text-primary);
 }
 
 .prose-custom h3 {
-    @apply text-lg font-medium mt-4 mb-2 text-gray-700 dark:text-gray-300;
+    @apply text-lg font-medium mt-4 mb-2;
+    color: var(--text-secondary);
 }
 
 .prose-custom p {
-    @apply mb-4 leading-loose text-gray-600 dark:text-gray-400;
+    @apply mb-4 leading-loose;
+    color: var(--text-secondary);
 }
 
 .prose-custom ul {
@@ -87,11 +270,13 @@
 }
 
 .prose-custom li {
-    @apply text-gray-600 dark:text-gray-400;
+    color: var(--text-secondary);
 }
 
 .prose-custom code {
-    @apply bg-gray-100 dark:bg-gray-800 rounded px-1 py-0.5 text-sm font-mono text-pink-500;
+    @apply rounded px-1 py-0.5 text-sm font-mono;
+    background-color: var(--bg-card);
+    color: var(--accent-main);
 }
 
 .prose-custom pre {
@@ -103,7 +288,9 @@
 }
 
 .prose-custom blockquote {
-    @apply border-l-4 border-flux-500 pl-4 italic my-4 text-gray-500 dark:text-gray-400;
+    @apply border-l-4 pl-4 italic my-4;
+    border-color: var(--accent-main);
+    color: var(--text-muted);
 }
 
 .prose-custom table {

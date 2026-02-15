@@ -42,81 +42,79 @@ export default {
 
         container.innerHTML = `
             <div class="h-[calc(100vh-80px)] flex flex-col md:flex-row max-w-[1920px] mx-auto">
-                <!-- Sidebar -->
-                <div class="w-full md:w-64 bg-slate-950/50 border-r border-white/5 flex-shrink-0 flex flex-col">
-                    <div class="p-6 border-b border-white/5">
-                        <div class="text-xs font-mono text-gray-500 uppercase mb-2">Target</div>
-                        <div class="flex items-center justify-between group cursor-pointer" id="project-title-header">
-                            <h2 class="text-sm font-bold text-white truncate pr-2 hover:text-cyan-400 transition-colors" title="Click to rename">${project.title}</h2>
-                            <i class="ri-edit-2-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                        </div>
-                    </div>
-                    
-                    <nav class="flex-1 p-4 space-y-1">
-                        <button class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all doc-tab active" data-doc="roadmap">
-                            <i class="ri-map-pin-2-line text-flux-500"></i>
-                            <span class="text-gray-300">Roadmap</span>
-                        </button>
-                        <button class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all doc-tab" data-doc="prd">
-                            <i class="ri-file-list-3-line text-gray-500"></i>
-                            <span class="text-gray-400">PRD</span>
-                        </button>
-                        <button class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all doc-tab" data-doc="srs">
-                            <i class="ri-book-2-line text-gray-500"></i>
-                            <span class="text-gray-400">SRS</span>
-                        </button>
-                        <button class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all doc-tab" data-doc="cursorrules">
-                            <i class="ri-robot-line text-gray-500"></i>
-                            <span class="text-gray-400">AI Instructions</span>
-                        </button>
-                    </nav>
-
-
-
-                    <div class="p-4 border-t border-white/5 space-y-2">
-                        <button id="btn-build-arch" class="flex items-center justify-center gap-2 w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-green-900/20">
-                            <i class="ri-magic-line"></i> Send to Code Generator
-                        </button>
-                         <a href="#/project/${projectId}/export" class="flex items-center justify-center gap-2 w-full py-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg text-xs font-medium transition-colors border border-white/5">
-                            <i class="ri-download-cloud-line"></i> Export Assets
-                        </a>
+            <!-- Sidebar -->
+            <div class="w-full md:w-64 bg-bg-sidebar border-r border-border-light flex-shrink-0 flex flex-col">
+                <div class="p-6 border-b border-border-light">
+                    <div class="text-xs font-mono text-text-muted uppercase mb-2">Target</div>
+                    <div class="flex items-center justify-between group cursor-pointer" id="project-title-header">
+                        <h2 class="text-sm font-bold text-text-primary truncate pr-2 hover:text-accent transition-colors" title="Click to rename">${project.title}</h2>
+                        <i class="ri-edit-2-line text-text-muted opacity-0 group-hover:opacity-100 transition-opacity"></i>
                     </div>
                 </div>
 
-                <!-- Main Content -->
-                <div class="flex-1 flex flex-col min-w-0 bg-slate-900/30">
-                    <div class="flex-1 overflow-y-auto p-8 relative">
-                         <!-- Toolbar -->
-                         <div class="absolute top-4 right-8 flex gap-2 z-10">
-                            <button id="view-toggle-btn" class="p-2 rounded-lg bg-white/5 border border-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors" title="Toggle View">
-                                <i class="ri-layout-grid-line" id="icon-kanban"></i>
-                                <i class="ri-list-check-2 hidden" id="icon-list"></i>
-                            </button>
-                            <button id="regen-btn" class="p-2 rounded-lg bg-white/5 border border-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors" title="Regenerate">
-                                <i class="ri-refresh-line"></i>
-                            </button>
-                            <button id="copy-btn" class="p-2 rounded-lg bg-white/5 border border-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors" title="Copy to Clipboard">
-                                <i class="ri-file-copy-line"></i>
-                            </button>
-                         </div>
+                <nav class="flex-1 p-4 space-y-1">
+                    <button class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all doc-tab active" data-doc="roadmap">
+                        <i class="ri-map-pin-2-line text-accent"></i>
+                        <span class="text-text-primary">Roadmap</span>
+                    </button>
+                    <button class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all doc-tab" data-doc="prd">
+                        <i class="ri-file-list-3-line text-text-muted"></i>
+                        <span class="text-text-secondary">PRD</span>
+                    </button>
+                    <button class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all doc-tab" data-doc="srs">
+                        <i class="ri-book-2-line text-text-muted"></i>
+                        <span class="text-text-secondary">SRS</span>
+                    </button>
+                    <button class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all doc-tab" data-doc="cursorrules">
+                        <i class="ri-robot-line text-text-muted"></i>
+                        <span class="text-text-secondary">AI Instructions</span>
+                    </button>
+                </nav>
 
-                         <!-- Content Area -->
-                         <div class="max-w-4xl mx-auto">
-                             <div id="doc-header" class="mb-8 pb-4 border-b border-white/5">
-                                <h1 class="text-3xl font-bold text-white mb-2" id="doc-title">Improvement Ideas</h1>
-                                <p class="text-sm text-gray-500 font-mono" id="doc-status">STATUS: SYNC_COMPLETE</p>
-                             </div>
-                             
-                             <div id="doc-content" class="prose prose-invert prose-headings:font-sans prose-code:font-mono prose-pre:bg-black/30 max-w-none text-sm text-gray-300">
-                                <div class="flex flex-col items-center justify-center py-20 text-gray-500 animate-pulse">
-                                    <i class="ri-loader-4-line text-3xl mb-4 spinning"></i>
-                                    <span class="font-mono text-xs uppercase tracking-widest">Constructing_Matrix...</span>
-                                </div>
-                             </div>
-                         </div>
+                <div class="p-4 border-t border-border-light space-y-2">
+                    <button id="btn-build-arch" class="btn-primary w-full flex items-center justify-center gap-2 text-xs">
+                        <i class="ri-magic-line"></i> Send to Code Generator
+                    </button>
+                    <a href="#/project/${projectId}/export" class="btn-secondary w-full flex items-center justify-center gap-2 text-xs">
+                        <i class="ri-download-cloud-line"></i> Export Assets
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex-1 flex flex-col min-w-0 bg-bg-main">
+                <div class="flex-1 overflow-y-auto p-8 relative">
+                    <!-- Toolbar -->
+                    <div class="absolute top-4 right-8 flex gap-2 z-10">
+                        <button id="view-toggle-btn" class="p-2 rounded-lg bg-bg-card border border-border-light text-text-muted hover:text-text-primary hover:bg-bg-sidebar transition-colors" title="Toggle View">
+                            <i class="ri-layout-grid-line" id="icon-kanban"></i>
+                            <i class="ri-list-check-2 hidden" id="icon-list"></i>
+                        </button>
+                        <button id="regen-btn" class="p-2 rounded-lg bg-bg-card border border-border-light text-text-muted hover:text-text-primary hover:bg-bg-sidebar transition-colors" title="Regenerate">
+                            <i class="ri-refresh-line"></i>
+                        </button>
+                        <button id="copy-btn" class="p-2 rounded-lg bg-bg-card border border-border-light text-text-muted hover:text-text-primary hover:bg-bg-sidebar transition-colors" title="Copy to Clipboard">
+                            <i class="ri-file-copy-line"></i>
+                        </button>
+                    </div>
+
+                    <!-- Content Area -->
+                    <div class="max-w-4xl mx-auto">
+                        <div id="doc-header" class="mb-8 pb-4 border-b border-border-light">
+                            <h1 class="text-3xl font-serif font-bold text-text-primary mb-2" id="doc-title">Improvement Ideas</h1>
+                            <p class="text-sm text-text-muted font-mono" id="doc-status">STATUS: SYNC_COMPLETE</p>
+                        </div>
+
+                        <div id="doc-content" class="prose-custom max-w-none text-text-secondary">
+                            <div class="flex flex-col items-center justify-center py-20 text-text-muted animate-pulse">
+                                <i class="ri-loader-4-line text-3xl mb-4 spinning"></i>
+                                <span class="font-mono text-xs uppercase tracking-widest text-accent">Constructing_Matrix...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
         `;
 
         const docTitle = container.querySelector('#doc-title');
@@ -145,9 +143,16 @@ export default {
                 theme: 'base',
                 securityLevel: 'loose',
                 themeVariables: {
-                    primaryColor: '#8b5cf6',
-                    edgeLabelBackground: '#ffffff',
-                    tertiaryColor: '#f1f5f9'
+                    primaryColor: '#D97757',
+                    edgeLabelBackground: '#131316',
+                    tertiaryColor: '#1C1C21',
+                    mainBkg: '#1C1C21',
+                    nodeBkg: '#1C1C21',
+                    nodeBorder: '#2E2E33',
+                    labelBoxBkg: '#0f0f12',
+                    labelBoxBorder: '#2E2E33',
+                    lineColor: '#4B5563',
+                    textColor: '#EDEDED'
                 }
             });
         }
@@ -165,30 +170,135 @@ export default {
 
         marked.use({ renderer: renderer });
 
-        async function renderDiagrams() {
-            if (!window.mermaid) return;
+        /**
+         * Post-processes the DOM to convert code blocks into Mermaid diagrams.
+         * Handles both explicitly tagged blocks and implicit detection.
+         * Theme-aware: adapts colors based on light/dark mode.
+         */
+        async function processMermaidDiagrams() {
+            // 1. Detect current theme
+            const isDark = document.documentElement.classList.contains('dark');
 
-            // Re-select all .mermaid elements that haven't been processed
-            const diagrams = document.querySelectorAll('.mermaid:not([data-processed="true"])');
-            if (diagrams.length === 0) return;
+            if (!window.mermaid) {
+                console.warn("Mermaid.js not loaded");
+                return;
+            }
 
+            // 2. Define theme-specific color palettes
+            const themeConfig = {
+                startOnLoad: false,
+                theme: 'base',
+                securityLevel: 'loose',
+                themeVariables: isDark ? {
+                    // DARK MODE (Claude Code Style)
+                    darkMode: true,
+                    background: '#1C1C21',
+                    primaryColor: '#D97757',        // Terracotta accent
+                    primaryTextColor: '#EDEDED',    // White text
+                    primaryBorderColor: '#D97757',
+                    lineColor: '#9CA3AF',           // Light gray lines
+                    secondaryColor: '#252525',
+                    tertiaryColor: '#1a1a1a',
+                    mainBkg: '#1C1C21',
+                    nodeBkg: '#1C1C21',
+                    nodeBorder: '#2E2E33',
+                    edgeLabelBackground: '#131316',
+                    labelBoxBkg: '#0f0f12',
+                    labelBoxBorder: '#2E2E33',
+                    textColor: '#EDEDED'
+                } : {
+                    // LIGHT MODE (Perplexity Comet Style)
+                    darkMode: false,
+                    background: '#ffffff',
+                    primaryColor: '#20808D',        // Teal accent
+                    primaryTextColor: '#171717',    // Black text
+                    primaryBorderColor: '#20808D',
+                    lineColor: '#525252',           // Dark gray lines
+                    secondaryColor: '#f3f3f3',
+                    tertiaryColor: '#ffffff',
+                    mainBkg: '#f9f9f9',
+                    nodeBkg: '#f9f9f9',
+                    nodeBorder: '#e0e0e0',
+                    edgeLabelBackground: '#ffffff',
+                    labelBoxBkg: '#f3f3f3',
+                    labelBoxBorder: '#e0e0e0',
+                    textColor: '#191919'
+                }
+            };
+
+            // 3. Re-initialize Mermaid with theme-aware config
+            window.mermaid.initialize(themeConfig);
+
+            // 4. Find all code blocks that might be diagrams
+            const codeBlocks = document.querySelectorAll('pre code');
+
+            codeBlocks.forEach((codeBlock) => {
+                const text = codeBlock.textContent.trim();
+                const parentPre = codeBlock.parentElement;
+
+                // Check if it's explicitly marked as mermaid OR looks like mermaid syntax
+                const isMermaid = codeBlock.classList.contains('language-mermaid') ||
+                    text.startsWith('graph ') ||
+                    text.startsWith('sequenceDiagram') ||
+                    text.startsWith('gantt') ||
+                    text.startsWith('classDiagram') ||
+                    text.startsWith('stateDiagram') ||
+                    text.startsWith('erDiagram') ||
+                    text.startsWith('journey') ||
+                    text.startsWith('pie') ||
+                    text.startsWith('flowchart');
+
+                if (isMermaid && parentPre) {
+                    // Create the replacement div
+                    const mermaidDiv = document.createElement('div');
+                    mermaidDiv.classList.add('mermaid');
+                    mermaidDiv.textContent = text;
+                    // Store original code for re-rendering
+                    mermaidDiv.setAttribute('data-original-code', text);
+
+                    // Replace the <pre> block entirely
+                    parentPre.replaceWith(mermaidDiv);
+                }
+            });
+
+            // 5. Handle existing .mermaid divs (for re-rendering on theme change)
+            const existingDiagrams = document.querySelectorAll('.mermaid');
+            existingDiagrams.forEach(el => {
+                // If already rendered (has SVG), reset for re-render
+                if (el.querySelector('svg')) {
+                    const originalCode = el.getAttribute('data-original-code') || el.textContent;
+                    el.innerHTML = originalCode;
+                    el.removeAttribute('data-processed');
+                } else if (!el.hasAttribute('data-original-code')) {
+                    // Save code for future re-renders
+                    el.setAttribute('data-original-code', el.textContent);
+                }
+            });
+
+            // 6. Trigger the render
             try {
-                await window.mermaid.run({
-                    nodes: diagrams
-                });
+                const diagrams = document.querySelectorAll('.mermaid');
+                if (diagrams.length > 0) {
+                    await window.mermaid.run({
+                        querySelector: '.mermaid'
+                    });
+                }
             } catch (err) {
                 console.error("Mermaid Render Error:", err);
-                // Find broken diagrams
-                diagrams.forEach(el => {
+                // Show error for broken diagrams
+                document.querySelectorAll('.mermaid').forEach(el => {
                     if (!el.querySelector('svg')) {
-                        el.innerHTML = `<div class="p-4 bg-red-50 border border-red-200 text-red-600 rounded">
+                        el.innerHTML = `<div class="p-4 bg-error/10 border border-error/20 text-error rounded-xl">
                             <p class="font-bold text-xs mb-2">⚠️ Diagram Syntax Error</p>
-                            <pre class="text-xs overflow-auto">${el.textContent}</pre>
+                            <pre class="text-xs overflow-auto bg-bg-main p-2 rounded mt-2">${el.textContent}</pre>
                         </div>`;
                     }
                 });
             }
         }
+
+        // Expose function globally for theme toggle re-rendering
+        window.processMermaidDiagrams = processMermaidDiagrams;
 
         try {
             const savedDocs = localStorage.getItem('flux_planning_docs');
@@ -241,8 +351,8 @@ export default {
 
             // Swap to input
             titleHeader.innerHTML = `
-                <input type="text" id="rename-input" class="w-full bg-slate-900 text-white border border-flux-500 rounded px-2 py-1 text-sm focus:outline-none" value="${currentTitle}">
-             `;
+            < input type = "text" id = "rename-input" class="w-full bg-slate-900 text-white border border-flux-500 rounded px-2 py-1 text-sm focus:outline-none" value = "${currentTitle}" >
+                `;
             const input = titleHeader.querySelector('input');
             input.focus();
 
@@ -254,23 +364,23 @@ export default {
                         app.toast('Project renamed', 'success');
                         // Restore UI with new title
                         titleHeader.innerHTML = `
-                            <h2 class="text-sm font-bold text-white truncate pr-2 hover:text-cyan-400 transition-colors" title="Click to rename">${newTitle}</h2>
-                            <i class="ri-edit-2-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                        `;
+                < h2 class="text-sm font-bold text-white truncate pr-2 hover:text-cyan-400 transition-colors" title = "Click to rename" > ${newTitle}</h2 >
+                    <i class="ri-edit-2-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+        `;
                     } catch (err) {
                         app.toast(err.message, 'error');
                         // Revert
                         titleHeader.innerHTML = `
-                            <h2 class="text-sm font-bold text-white truncate pr-2 hover:text-cyan-400 transition-colors" title="Click to rename">${currentTitle}</h2>
-                            <i class="ri-edit-2-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                        `;
+            < h2 class="text-sm font-bold text-white truncate pr-2 hover:text-cyan-400 transition-colors" title = "Click to rename" > ${currentTitle}</h2 >
+                <i class="ri-edit-2-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+        `;
                     }
                 } else {
                     // Revert
                     titleHeader.innerHTML = `
-                        <h2 class="text-sm font-bold text-white truncate pr-2 hover:text-cyan-400 transition-colors" title="Click to rename">${currentTitle}</h2>
-                        <i class="ri-edit-2-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                    `;
+            < h2 class="text-sm font-bold text-white truncate pr-2 hover:text-cyan-400 transition-colors" title = "Click to rename" > ${currentTitle}</h2 >
+                <i class="ri-edit-2-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+        `;
                 }
                 // re-attach listener (since we replaced innerHTML)
                 // Actually this pattern of replacing innerHTML disconnects the listener on `titleHeader` if we aren't careful.
@@ -309,7 +419,7 @@ export default {
                 if (!window.currentBlueprints) {
                     app.toast("No blueprint data available. Please regenerate research.", "warning");
                     // Fallback redirect
-                    window.location.hash = `#/project/${projectId}/forge`;
+                    window.location.hash = `# / project / ${projectId}/forge`;
                     return;
                 }
 
@@ -422,32 +532,34 @@ export default {
          * Render a single task card
          */
         function renderTaskCard(task) {
-            const statusColor = task.done ? 'green' : 'violet';
-            const statusText = task.done ? 'Done' : 'To Do';
+            const statusConfig = task.done
+                ? { color: 'emerald-500', bg: 'bg-emerald-500/10', text: 'emerald-500', label: 'Done' }
+                : { color: 'var(--accent-main)', bg: 'bg-accent/10', text: 'text-accent', label: 'To Do' };
+
             const completedSubtasks = task.subtasks.filter(st => st.done).length;
             const totalSubtasks = task.subtasks.length;
 
             return `
-                <div class="task-card glass-panel bg-slate-900/40 p-4 rounded-xl border border-white/5 hover:border-${statusColor}-500/30 transition-all group">
+                <div class="task-card bg-bg-card p-4 rounded-xl border border-border-light hover:border-accent/40 transition-all group">
                     <!-- Status and Drag Handle -->
                     <div class="flex items-center justify-between mb-3">
-                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-${statusColor}-500/10 text-${statusColor}-400 border border-${statusColor}-500/20">
-                            ${statusText}
+                        <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusConfig.bg} ${statusConfig.text} border border-current opacity-80">
+                            ${statusConfig.label}
                         </span>
-                        <i class="ri-drag-move-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        <i class="ri-drag-move-line text-text-muted opacity-0 group-hover:opacity-100 transition-opacity"></i>
                     </div>
                     
                     <!-- Task Text -->
-                    <div class="text-sm text-gray-300 leading-relaxed">
+                    <div class="text-sm text-text-primary leading-relaxed font-medium">
                         ${task.text}
                     </div>
                     
                     <!-- Subtasks Progress -->
                     ${totalSubtasks > 0 ? `
-                        <div class="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-                            <span class="text-gray-500">${completedSubtasks}/${totalSubtasks} subtasks</span>
-                            <div class="flex-1 mx-3 h-1 bg-slate-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-${statusColor}-500 transition-all" style="width: ${(completedSubtasks / totalSubtasks) * 100}%"></div>
+                        <div class="mt-3 pt-3 border-t border-border-light flex items-center justify-between text-xs">
+                            <span class="text-text-muted font-mono">${completedSubtasks}/${totalSubtasks}</span>
+                            <div class="flex-1 mx-3 h-1 bg-bg-sidebar rounded-full overflow-hidden">
+                                <div class="h-full bg-accent transition-all" style="width: ${(completedSubtasks / totalSubtasks) * 100}%"></div>
                             </div>
                         </div>
                     ` : ''}
@@ -461,10 +573,10 @@ export default {
         function renderKanbanBoard(phases) {
             if (!phases || phases.length === 0) {
                 return `
-                    <div class="flex items-center justify-center py-20 text-gray-500">
+                    <div class="flex items-center justify-center py-20 text-text-muted">
                         <div class="text-center">
                             <i class="ri-layout-grid-line text-4xl mb-3 opacity-30"></i>
-                            <p class="text-sm">No phases found in roadmap</p>
+                            <p class="text-sm font-serif">No phases found in roadmap</p>
                         </div>
                     </div>
                 `;
@@ -481,28 +593,28 @@ export default {
                 return `
                                 <div class="phase-column w-80 flex-shrink-0">
                                     <!-- Phase Header -->
-                                    <div class="glass-panel bg-slate-900/60 p-4 rounded-t-2xl border-b border-white/5 sticky top-0 z-10">
-                                        <h3 class="text-sm font-bold text-white mb-2">${phase.name}</h3>
+                                    <div class="bg-bg-sidebar p-4 rounded-t-2xl border-x border-t border-border-light sticky top-0 z-10">
+                                        <h3 class="text-sm font-bold text-text-primary mb-2 font-serif uppercase tracking-wider">${phase.name}</h3>
                                         <div class="flex items-center gap-2">
-                                            <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                                <div class="h-full bg-gradient-to-r from-flux-500 to-cyan-500 transition-all" style="width: ${progress}%"></div>
+                                            <div class="flex-1 h-1.5 bg-bg-card rounded-full overflow-hidden border border-border-light">
+                                                <div class="h-full bg-accent transition-all" style="width: ${progress}%"></div>
                                             </div>
-                                            <span class="text-xs text-gray-500 font-mono">${completedTasks}/${totalTasks}</span>
+                                            <span class="text-[10px] text-text-muted font-mono font-bold">${completedTasks}/${totalTasks}</span>
                                         </div>
                                     </div>
                                     
-                                    <!-- Task Cards -->
-                                    <div class="task-list space-y-3 p-4 bg-slate-950/30 rounded-b-2xl min-h-[400px]">
-                                        ${phase.tasks.map(task => renderTaskCard(task)).join('')}
-                                        ${totalTasks === 0 ? `
+                                    <!--Task Cards-- >
+                    <div class="task-list space-y-3 p-4 bg-bg-main border border-border-light border-t-0 rounded-b-2xl min-h-[400px]">
+                        ${phase.tasks.map(task => renderTaskCard(task)).join('')}
+                        ${totalTasks === 0 ? `
                                             <div class="empty-state text-center py-12">
-                                                <i class="ri-rocket-2-line text-6xl text-violet-500/30 mb-4 block"></i>
-                                                <p class="text-gray-500 text-xs font-medium">No tasks in this phase</p>
+                                                <i class="ri-rocket-2-line text-6xl text-accent/20 mb-4 block"></i>
+                                                <p class="text-text-muted text-xs font-medium">No tasks in this phase</p>
                                             </div>
                                         ` : ''}
-                                    </div>
-                                </div>
-                            `;
+                    </div>
+                                </div >
+                    `;
             }).join('')}
                     </div>
                 </div>
@@ -512,8 +624,14 @@ export default {
         // ─── Toolbar Actions ─────────────────────────────────────────
 
         // Toolbar Actions
-        container.querySelector('#regen-btn').addEventListener('click', () => {
-            if (confirm("Regenerate this document?")) {
+        container.querySelector('#regen-btn').addEventListener('click', async () => {
+            const confirmed = await window.fluxModal.confirm(
+                "Regenerate Document?",
+                "Are you sure you want to regenerate this part of the plan? This will overwrite existing content.",
+                "Regenerate"
+            );
+
+            if (confirmed) {
                 docContent.innerHTML = '<div class="loader mx-auto mt-20 border-white/20"></div>';
                 startStream(activeDoc, docContent, activeDoc !== 'cursorrules');
             }
@@ -542,10 +660,10 @@ export default {
                 docContent.querySelectorAll('td').forEach(t => t.classList.add('p-2', 'border-b', 'border-white/5', 'text-gray-300'));
                 docContent.querySelectorAll('input[type="checkbox"]').forEach(c => c.classList.add('accent-flux-500', 'mr-2', 'h-4', 'w-4', 'bg-slate-800', 'border-gray-600', 'rounded'));
 
-                // Process Mermaid Diagrams
-                requestAnimationFrame(() => {
-                    renderDiagrams();
-                });
+                // Process Mermaid Diagrams (with delay to ensure DOM is ready)
+                setTimeout(() => {
+                    processMermaidDiagrams();
+                }, 100);
             }
         }
         function startStream(docType, targetEl, renderMarkdown) {
@@ -578,13 +696,15 @@ export default {
                     renderContent(content, docType);
 
                     // Trigger Diagram rendering on final content
-                    requestAnimationFrame(() => {
-                        renderDiagrams();
-                    });
+                    setTimeout(() => {
+                        if (window.processMermaidDiagrams) {
+                            window.processMermaidDiagrams();
+                        }
+                    }, 100);
                 },
                 (err) => {
                     console.error(err);
-                    targetEl.innerHTML = `<div class="p-4 rounded border border-red-500/20 bg-red-500/5 text-red-400 text-xs font-mono">Stream Error: ${err.message}</div>`;
+                    targetEl.innerHTML = `<div class="p-4 rounded border border-accent/20 bg-bg-card text-text-muted text-xs font-mono">Stream Error: ${err.message}</div>`;
                 }
             );
         }
@@ -594,12 +714,12 @@ export default {
         // 1. Inject Toolbar HTML (if not exists)
         if (!document.getElementById('refine-toolbar')) {
             const toolbarHTML = `
-                <div id="refine-toolbar" class="hidden absolute z-50 bg-gray-900 border border-purple-500/30 shadow-2xl rounded-lg p-2 flex gap-2 items-center animate-fade-in transition-all">
-                    <input type="text" id="refine-input" placeholder="How should I change this?" class="bg-black/50 text-white text-xs px-2 py-1 rounded border border-white/10 w-48 focus:outline-none focus:border-purple-500 transition-colors">
-                    <button id="btn-refine-go" class="text-purple-400 hover:text-white p-1 hover:bg-purple-500/20 rounded cursor-pointer transition-colors">
+                <div id="refine-toolbar" class="hidden absolute z-50 bg-bg-card border border-accent/30 shadow-2xl rounded-lg p-2 flex gap-2 items-center animate-fade-in transition-all">
+                    <input type="text" id="refine-input" placeholder="Refine architecture..." class="bg-bg-sidebar text-text-primary text-xs px-2 py-1 rounded border border-border-light w-48 focus:outline-none focus:border-accent transition-colors">
+                    <button id="btn-refine-go" class="text-accent hover:bg-accent/10 p-1 rounded cursor-pointer transition-colors">
                         <i class="ri-magic-line"></i>
                     </button>
-                    <button id="btn-refine-close" class="text-gray-500 hover:text-white p-1 hover:bg-white/10 rounded cursor-pointer transition-colors ml-1">
+                    <button id="btn-refine-close" class="text-text-muted hover:text-text-primary p-1 hover:bg-bg-sidebar rounded cursor-pointer transition-colors ml-1">
                         <i class="ri-close-line"></i>
                     </button>
                 </div>

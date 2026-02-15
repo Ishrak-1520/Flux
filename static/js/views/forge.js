@@ -97,7 +97,7 @@ export default {
 
             } catch (e) {
                 console.error("Scaffold Error:", e);
-                alert("Error: " + e.message);
+                await window.fluxModal.alert("Scaffold Error", "Failed to generate project scaffold: " + e.message);
             } finally {
                 if (loader) loader.classList.add('hidden');
                 if (btn) btn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -106,7 +106,7 @@ export default {
 
         window.downloadZip = async function () {
             if (!currentScaffold || !window.JSZip) {
-                alert("Not ready. Please wait.");
+                await window.fluxModal.alert("Download Not Ready", "The project scaffold is not ready for download. Please wait for generation to complete.");
                 return;
             }
             const zip = new JSZip();
@@ -130,16 +130,20 @@ export default {
             list.innerHTML = '';
 
             if (!data.files || data.files.length === 0) {
-                list.innerHTML = '<div class="text-red-400 p-2 text-xs">No files.</div>';
+                list.innerHTML = '<div class="text-error p-4 text-xs font-mono uppercase tracking-widest opacity-50 text-center">No_Files_Generated</div>';
                 return;
             }
 
             data.files.forEach(file => {
                 const el = document.createElement('div');
-                el.className = "flex items-center gap-2 px-2 py-1.5 text-gray-400 hover:text-white hover:bg-white/5 rounded cursor-pointer transition-colors truncate";
-                el.innerHTML = `<i class="ri-file-code-line"></i> <span class="truncate text-xs">${file.path}</span>`;
+                el.className = "flex items-center gap-3 px-4 py-2 text-text-muted hover:text-text-primary hover:bg-bg-card border border-transparent hover:border-border-light rounded-xl cursor-pointer transition-all truncate text-xs font-bold uppercase tracking-wider";
+                el.innerHTML = `<i class="ri-file-code-line text-accent"></i> <span class="truncate">${file.path}</span>`;
                 el.onclick = () => {
-                    document.getElementById('current-file').textContent = file.path;
+                    // Reset all
+                    list.querySelectorAll('div').forEach(d => d.classList.remove('bg-bg-card', 'text-text-primary', 'border-border-light'));
+                    el.classList.add('bg-bg-card', 'text-text-primary', 'border-border-light');
+
+                    document.getElementById('current-file').innerHTML = `<i class="ri-file-code-line text-accent mr-2"></i> ${file.path}`;
                     document.getElementById('code-content').textContent = file.content;
                 };
                 list.appendChild(el);
@@ -147,46 +151,50 @@ export default {
             if (list.firstChild) list.firstChild.click();
         };
 
-        // 3. Render HTML with INLINE HANDLERS
+        // 3. Render HTML
         container.innerHTML = `
-            <div class="h-[calc(100vh-80px)] max-w-7xl mx-auto p-6 flex flex-col">
-                <div class="flex justify-between items-center mb-6">
+            <div class="h-[calc(100vh-80px)] max-w-7xl mx-auto p-10 flex flex-col animate-fade-in">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
                     <div>
-                        <h1 class="text-3xl font-bold text-white flex items-center gap-3">
-                            <i class="ri-magic-line text-purple-400"></i> Code Generator
-                        </h1>
-                        <p class="text-gray-400 text-sm font-mono italic">Creates the folders, files, and starter code you need to begin.</p>
+                        <div class="flex items-center gap-4 mb-3">
+                             <div class="p-3 rounded-xl bg-accent text-white shadow-lg shadow-accent/20">
+                                <i class="ri-magic-line text-2xl"></i>
+                             </div>
+                             <h1 class="text-4xl font-serif font-bold text-text-primary tracking-tight">Code Forge</h1>
+                        </div>
+                        <p class="text-text-secondary text-base leading-relaxed">Synthesis unit: generating architectural foundations and localized logic protocols.</p>
                     </div>
-                    <div class="flex gap-3">
-                        <button id="btn-generate" onclick="window.triggerScaffold()" class="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold shadow-lg shadow-purple-500/20 transition-all flex flex-col items-center cursor-pointer">
-                            <div class="flex items-center gap-2">
-                                <i class="ri-magic-line"></i> Generate Project Files
-                            </div>
+                    <div class="flex gap-4">
+                        <button id="btn-generate" onclick="window.triggerScaffold()" class="btn-primary flex items-center gap-3 px-8 py-4 uppercase tracking-widest text-xs">
+                            <i class="ri-magic-line"></i> Initialize_Sequence
                         </button>
-                         <button id="btn-download" onclick="window.downloadZip()" class="hidden px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-bold shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2 cursor-pointer">
-                            <i class="ri-download-cloud-line"></i> Download ZIP
+                         <button id="btn-download" onclick="window.downloadZip()" class="hidden btn-secondary flex items-center gap-3 px-8 py-4 uppercase tracking-widest text-xs">
+                            <i class="ri-download-cloud-line text-accent"></i> Export_Package
                         </button>
                     </div>
                 </div>
 
-                <div id="workspace" class="flex-1 bg-gray-900/50 border border-white/10 rounded-xl overflow-hidden flex relative">
-                    <div id="loader" class="absolute inset-0 z-20 bg-gray-900/90 backdrop-blur flex flex-col items-center justify-center hidden">
-                        <div class="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mb-4"></div>
-                        <div class="font-mono text-purple-300 animate-pulse">Running DevOps Protocols...</div>
+                <div id="workspace" class="flex-1 bg-bg-card border border-border-light rounded-3xl overflow-hidden flex relative shadow-3xl">
+                    <div id="loader" class="absolute inset-0 z-20 bg-bg-main/90 backdrop-blur flex flex-col items-center justify-center hidden">
+                        <div class="w-12 h-12 border-4 border-accent/20 border-t-accent rounded-full animate-spin mb-6"></div>
+                        <div class="font-mono text-accent text-xs uppercase tracking-widest font-bold animate-pulse">Running_DevOps_Protocols...</div>
                     </div>
 
-                    <div class="w-64 bg-black/20 border-r border-white/5 flex flex-col">
-                        <div class="p-3 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/5">Explorer</div>
-                        <div id="file-list" class="flex-1 overflow-y-auto p-2 space-y-1 font-mono text-sm">
-                            <div class="text-gray-600 text-xs italic p-2 text-center">No scaffold generated.</div>
+                    <div class="w-72 bg-bg-sidebar border-r border-border-light flex flex-col">
+                        <div class="p-4 text-[10px] font-bold text-text-muted uppercase tracking-widest border-b border-border-light flex items-center justify-between">
+                            <span>Project_Explorer</span>
+                            <i class="ri-folders-line"></i>
+                        </div>
+                        <div id="file-list" class="flex-1 overflow-y-auto p-3 space-y-2">
+                            <div class="text-text-muted text-[10px] font-mono uppercase tracking-widest p-6 text-center opacity-50">Null_Sequence_Detected</div>
                         </div>
                     </div>
 
-                    <div class="flex-1 flex flex-col bg-[#1e1e1e]">
-                        <div class="h-10 bg-[#252526] border-b border-white/5 flex items-center px-4 justify-between">
-                            <span id="current-file" class="text-gray-300 text-sm font-mono"></span>
+                    <div class="flex-1 flex flex-col bg-bg-main relative">
+                        <div class="h-12 bg-bg-sidebar border-b border-border-light flex items-center px-6 justify-between editor-header">
+                            <span id="current-file" class="text-text-primary text-[10px] uppercase tracking-widest font-bold font-mono truncate flex items-center gap-2">Ready</span>
                         </div>
-                        <pre class="flex-1 overflow-auto p-4 text-sm font-mono text-gray-300 leading-relaxed custom-scrollbar"><code id="code-content"></code></pre>
+                        <pre class="flex-1 overflow-auto p-8 text-sm font-mono text-text-primary leading-relaxed custom-scrollbar bg-bg-main"><code id="code-content" class="block"></code></pre>
                     </div>
                 </div>
             </div>
@@ -196,7 +204,7 @@ export default {
         if (typeof activeContext === 'object') {
             const statusEl = document.getElementById('current-file');
             if (statusEl) {
-                statusEl.innerHTML = `< span class="text-green-400 flex items-center gap-2" > <i class="ri-link"></i> Linked to Plan: ${activeContext.project_name || 'Custom Architecture'}</span > `;
+                statusEl.innerHTML = `<span class="text-emerald-500 flex items-center gap-2"><i class="ri-link"></i> Linked_to_Plan: ${activeContext.project_name || 'Custom_Architecture'}</span>`;
             }
         }
     }

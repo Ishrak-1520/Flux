@@ -24,10 +24,10 @@ export default {
         const getDocContent = (type) => docs.find(d => d.doc_type === type)?.content || '';
 
         container.innerHTML = `
-            <div class="max-w-4xl mx-auto">
-                <div class="mb-10 text-center">
-                    <h1 class="text-3xl font-bold text-white mb-2">Project Assets</h1>
-                    <p class="text-gray-400">Download your blueprint and get started.</p>
+            <div class="max-w-4xl mx-auto py-12 animate-fade-in">
+                <div class="mb-12 text-center">
+                    <h1 class="text-5xl font-serif font-bold text-text-primary mb-4 tracking-tight">Project Assets</h1>
+                    <p class="text-text-secondary text-lg leading-relaxed">Synthesis complete. Export architectural specifications and protocols.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -37,9 +37,10 @@ export default {
                     ${renderAssetCard('Implementation Roadmap', 'roadmap', 'ri-map-2-line', 'markdown', getDocContent('roadmap'))}
                 </div>
 
-                <div class="mt-12 text-center">
-                    <a href="#/dashboard" class="text-flux-500 hover:text-white transition-colors">
-                        &larr; Back to Dashboard
+                <div class="mt-16 text-center">
+                    <a href="#/dashboard" class="text-accent hover:text-text-primary transition-colors font-mono text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-2 group">
+                        <i class="ri-arrow-left-line group-hover:-translate-x-1 transition-transform"></i>
+                        Return_to_Dashboard
                     </a>
                 </div>
             </div>
@@ -49,26 +50,26 @@ export default {
             const isEmpty = !content;
 
             return `
-                <div class="glass-panel p-6 rounded-xl border border-white/5 hover:border-flux-500/50 transition-colors flex items-center justify-between group">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-flux-500">
-                            <i class="${icon} text-xl"></i>
+                <div class="bg-bg-card p-6 rounded-2xl border border-border-light hover:border-accent transition-all flex items-center justify-between group shadow-sm hover:shadow-xl">
+                    <div class="flex items-center gap-5">
+                        <div class="w-14 h-14 rounded-xl bg-bg-sidebar border border-border-light flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
+                            <i class="${icon} text-2xl"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-gray-200">${title}</h3>
-                            <p class="text-xs text-gray-500 uppercase tracking-wider">${format}</p>
+                            <h3 class="font-bold text-text-primary tracking-tight">${title}</h3>
+                            <p class="text-[9px] text-text-muted uppercase tracking-[0.2em] font-bold font-mono mt-1">${format}_Specification</p>
                         </div>
                     </div>
                     
                     <div>
                         <button 
-                            class="download-btn w-10 h-10 rounded-full bg-white/5 hover:bg-flux-500 hover:text-white text-gray-400 flex items-center justify-center transition-all ${isEmpty ? 'opacity-50 cursor-not-allowed' : ''}"
+                            class="download-btn w-12 h-12 rounded-full bg-bg-sidebar border border-border-light hover:bg-accent hover:border-accent hover:text-white text-text-muted flex items-center justify-center transition-all ${isEmpty ? 'opacity-30 cursor-not-allowed' : 'shadow-sm active:scale-95'}"
                             data-type="${type}"
                             data-filename="flux_${type}.${format === 'json' ? 'json' : 'md'}"
                             ${isEmpty ? 'disabled' : ''}
-                            title="${isEmpty ? 'Not generated' : 'Download'}"
+                            title="${isEmpty ? 'Not generated' : 'Download Package'}"
                         >
-                            <i class="ri-download-line"></i>
+                            <i class="ri-download-line text-xl"></i>
                         </button>
                     </div>
                 </div>

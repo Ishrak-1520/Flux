@@ -12,74 +12,60 @@ export default {
         const isRegister = window.location.hash.includes('register');
 
         container.innerHTML = `
-            <div class="min-h-screen flex items-center justify-center relative overflow-hidden">
-                <!-- Background Elements -->
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-flux-500/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
-                <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
-                <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
-
-                <div class="w-full max-w-md p-6">
+            <div class="min-h-screen flex items-center justify-center bg-bg-main relative overflow-hidden animate-fade-in">
+                <div class="w-full max-w-md p-6 relative z-10">
                     <!-- Auth Card -->
-                    <div class="glass-panel backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl relative">
-                        <!-- Glow effect -->
-                        <div class="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                        
+                    <div class="bg-bg-card p-10 rounded-3xl border border-border-light shadow-3xl relative">
                         <!-- Header -->
-                        <div class="text-center mb-10">
-                            <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-flux-500 to-cyan-500 shadow-lg shadow-flux-500/20 mb-4">
-                                <i class="ri-flow-chart text-2xl text-white"></i>
+                        <div class="text-center mb-12">
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent text-white shadow-xl shadow-accent/20 mb-6">
+                                <i class="ri-flow-chart text-3xl"></i>
                             </div>
-                            <h1 class="text-3xl font-bold text-white mb-2 tracking-tight">Flux</h1>
-                            <p class="text-gray-400 text-sm font-medium">System Access Required</p>
+                            <h1 class="text-4xl font-serif font-black text-text-primary mb-3 tracking-tight">Flux</h1>
+                            <p class="text-text-muted text-[10px] font-mono uppercase tracking-[0.2em] font-bold">System_Access_Required</p>
                         </div>
 
-                        <form id="auth-form" class="space-y-6">
+                        <form id="auth-form" class="space-y-8">
                             ${isRegister ? `
-                            <div class="space-y-2">
-                                <label class="block text-xs font-mono text-cyan-400 uppercase tracking-wider ml-1">Identity</label>
-                                <div class="relative group">
-                                    <input type="text" name="display_name" required 
-                                        class="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-flux-500 focus:bg-slate-900 transition-all shadow-inner"
-                                        placeholder="Display Name">
-                                </div>
+                            <div class="space-y-3">
+                                <label class="block text-[10px] font-mono text-text-muted uppercase tracking-widest font-bold ml-1">Identity_Signature</label>
+                                <input type="text" name="display_name" required 
+                                    class="w-full px-5 py-4 rounded-2xl bg-bg-sidebar border border-border-light text-text-primary placeholder-text-muted focus:outline-none focus:border-accent transition-all shadow-inner text-sm"
+                                    placeholder="Display Name">
                             </div>
                             ` : ''}
                             
-                            <div class="space-y-2">
-                                <label class="block text-xs font-mono text-cyan-400 uppercase tracking-wider ml-1">Credentials</label>
-                                <div class="relative group">
-                                    <input type="email" name="email" required 
-                                        class="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-flux-500 focus:bg-slate-900 transition-all shadow-inner"
-                                        placeholder="user@flux.system">
-                                </div>
+                            <div class="space-y-3">
+                                <label class="block text-[10px] font-mono text-text-muted uppercase tracking-widest font-bold ml-1">Credential_Uplink</label>
+                                <input type="email" name="email" required 
+                                    class="w-full px-5 py-4 rounded-2xl bg-bg-sidebar border border-border-light text-text-primary placeholder-text-muted focus:outline-none focus:border-accent transition-all shadow-inner text-sm"
+                                    placeholder="user@flux.system">
                             </div>
                             
-                            <div class="space-y-2">
-                                <label class="block text-xs font-mono text-cyan-400 uppercase tracking-wider ml-1">Security Key</label>
-                                <div class="relative group">
-                                    <input type="password" name="password" required 
-                                        class="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-flux-500 focus:bg-slate-900 transition-all shadow-inner"
-                                        placeholder="••••••••">
-                                </div>
+                            <div class="space-y-3">
+                                <label class="block text-[10px] font-mono text-text-muted uppercase tracking-widest font-bold ml-1">Security_Sequence</label>
+                                <input type="password" name="password" required 
+                                    class="w-full px-5 py-4 rounded-2xl bg-bg-sidebar border border-border-light text-text-primary placeholder-text-muted focus:outline-none focus:border-accent transition-all shadow-inner text-sm"
+                                    placeholder="••••••••">
                             </div>
 
-                            <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-flux-600 to-purple-600 hover:from-flux-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-flux-500/20 active:scale-[0.98] transition-all duration-200 mt-2">
-                                ${isRegister ? 'INITIALIZE_ACCOUNT' : 'AUTHENTICATE'}
+                            <button type="submit" class="btn-primary w-full py-4.5 text-xs uppercase tracking-widest font-bold mt-4">
+                                ${isRegister ? 'Initialize_Account' : 'Authenticate_Access'}
                             </button>
                         </form>
 
-                        <div class="mt-8 text-center">
-                            <a href="#${isRegister ? '/login' : '/register'}" class="text-sm text-gray-400 hover:text-white transition-colors">
-                                ${isRegister ? 'Already have access? ' : 'Need access? '}
-                                <span class="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 decoration-cyan-400/30">
-                                    ${isRegister ? 'Sign in' : 'Register protocol'}
+                        <div class="mt-10 text-center">
+                            <a href="#${isRegister ? '/login' : '/register'}" class="text-xs text-text-muted hover:text-text-primary transition-colors font-medium">
+                                ${isRegister ? 'Already have access? ' : 'Need system access? '}
+                                <span class="text-accent hover:underline underline-offset-8 decoration-accent/30 font-bold uppercase tracking-widest ml-1">
+                                    ${isRegister ? 'Sign_In' : 'Register_Protocol'}
                                 </span>
                             </a>
                         </div>
                     </div>
                     
-                    <div class="text-center mt-6 text-[10px] text-gray-600 font-mono">
-                        SECURE_CONNECTION :: ENCRYPTED
+                    <div class="text-center mt-8 text-[9px] text-text-muted font-mono uppercase tracking-[0.3em] opacity-50">
+                        Secure_Connection :: 256-Bit_Encryption
                     </div>
                 </div>
             </div>
@@ -96,7 +82,7 @@ export default {
 
             try {
                 btn.disabled = true;
-                btn.innerHTML = '<div class="flex items-center justify-center gap-2"><i class="ri-loader-4-line animate-spin text-xl"></i> PROCESSING</div>';
+                btn.innerHTML = '<div class="flex items-center justify-center gap-3"><i class="ri-loader-4-line animate-spin text-xl"></i> PROCESSING_UPLINK...</div>';
 
                 if (isRegister) {
                     await API.register(data.email, data.password, data.display_name);

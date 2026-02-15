@@ -209,12 +209,12 @@ const app = {
         const container = document.getElementById('toast-container');
         const el = document.createElement('div');
         const colors = {
-            success: 'bg-green-500',
-            error: 'bg-red-500',
-            info: 'bg-blue-500'
+            success: 'bg-emerald-500',
+            error: 'bg-error',
+            info: 'bg-accent'
         };
 
-        el.className = `${colors[type]} text-white px-4 py-2 rounded shadow-lg backdrop-filter backdrop-blur-sm bg-opacity-90 transform transition-all duration-300 translate-y-10 opacity-0`;
+        el.className = `${colors[type]} text-white px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 translate-y-10 opacity-0 font-bold uppercase tracking-widest text-[10px] z-[100]`;
         el.innerText = message;
 
         container.appendChild(el);
@@ -243,8 +243,15 @@ const app = {
     /**
      * Reset Project State
      */
-    startNewProject() {
-        if (confirm("Start a new project? This will clear your current progress and research.")) {
+    async startNewProject() {
+        const confirmed = await window.fluxModal.confirm(
+            "Start New Project?",
+            "This will clear your current progress and research for the active session. Are you sure you want to proceed?",
+            "Start New",
+            false
+        );
+
+        if (confirmed) {
             // Clear Flux specific keys
             localStorage.removeItem('flux_research_data');
             localStorage.removeItem('flux_planning_docs');

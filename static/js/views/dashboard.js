@@ -9,13 +9,13 @@ import app from '../app.js';
 // Internal helper for rendering cards with "Flux" styling
 const renderCard = (project) => {
     const div = document.createElement('div');
-    div.className = "group relative p-[1px] rounded-2xl bg-gradient-to-b from-white/10 to-transparent hover:from-flux-500/50 hover:to-cyan-400/50 transition-all duration-500 cursor-pointer overflow-hidden";
+    div.className = "group relative p-[1px] rounded-2xl bg-border-light hover:border-accent transition-all duration-500 cursor-pointer overflow-hidden";
 
     const statusColors = {
-        'ideation': 'text-gray-400 border-gray-700 bg-gray-500/10',
-        'research': 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',
-        'planning': 'text-violet-400 border-violet-500/30 bg-violet-500/10',
-        'complete': 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
+        'ideation': 'text-text-muted border-border-light bg-bg-sidebar',
+        'research': 'text-accent border-accent/30 bg-accent/10',
+        'planning': 'text-accent border-accent/30 bg-accent/10',
+        'complete': 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10'
     };
 
     const statusLabel = {
@@ -26,13 +26,10 @@ const renderCard = (project) => {
     };
 
     div.innerHTML = `
-        <div class="relative h-full bg-slate-950/90 backdrop-blur-xl rounded-2xl p-6 transition-all duration-300 group-hover:bg-slate-900/90">
-            <!-- Glow Effect -->
-            <div class="absolute -top-20 -right-20 w-40 h-40 bg-flux-500/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
+        <div class="relative h-full bg-bg-card rounded-2xl p-6 transition-all duration-300 group-hover:bg-bg-main">
             <!-- Header -->
             <div class="flex items-start justify-between mb-6 relative z-10">
-                <div class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-flux-500/30 group-hover:text-flux-400 transition-colors">
+                <div class="w-10 h-10 rounded-lg bg-bg-sidebar border border-border-light flex items-center justify-center group-hover:border-accent group-hover:text-accent transition-colors">
                     <i class="ri-code-s-slash-line text-xl opacity-70 group-hover:opacity-100"></i>
                 </div>
                 
@@ -45,7 +42,7 @@ const renderCard = (project) => {
             <div class="relative z-10 mb-6">
                 <!-- Title & Edit Container -->
                 <div class="flex items-center justify-between mb-2 group/title">
-                    <h3 class="text-xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 transition-all truncate pr-2 project-title">
+                    <h3 class="text-xl font-bold text-text-primary transition-all truncate pr-2 project-title">
                         ${project.title}
                     </h3>
                      <button class="edit-btn opacity-0 group-hover/title:opacity-100 text-gray-500 hover:text-white transition-opacity p-1" title="Rename">
@@ -53,26 +50,26 @@ const renderCard = (project) => {
                     </button>
                 </div>
                 
-                <p class="text-sm text-gray-500 line-clamp-2 h-10 group-hover:text-gray-400">
+                <p class="text-sm text-text-secondary line-clamp-2 h-10 group-hover:text-text-primary">
                     ${project.original_prompt || 'No description provided.'}
                 </p>
             </div>
             
             <!-- Footer -->
-            <div class="flex items-center justify-between text-xs text-gray-600 font-mono relative z-10 pt-4 border-t border-white/5 group-hover:border-white/10">
+            <div class="flex items-center justify-between text-xs text-text-muted font-mono relative z-10 pt-4 border-t border-border-light group-hover:border-accent/20">
                 <div class="flex items-center gap-2">
                     <i class="ri-time-line"></i>
                     <span>${new Date(project.updated_at).toLocaleDateString()}</span>
                 </div>
-                ${project.category ? `<span class="px-2 py-0.5 rounded bg-white/5 text-gray-400 border border-white/5">${project.category}</span>` : ''}
+                ${project.category ? `<span class="px-2 py-0.5 rounded bg-bg-sidebar text-text-muted border border-border-light">${project.category}</span>` : ''}
             </div>
 
             <!-- Hover Overlay Actions -->
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 z-20 translate-y-4 group-hover:translate-y-0 action-overlay">
-                <button class="open-btn px-6 py-2 bg-white text-black rounded-full text-sm font-bold hover:scale-105 transition-transform">
+            <div class="absolute inset-0 bg-bg-main/80 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 z-20 translate-y-4 group-hover:translate-y-0 action-overlay">
+                <button class="open-btn px-6 py-2 bg-accent text-white rounded-full text-sm font-bold hover:scale-105 transition-transform shadow-lg shadow-accent/20">
                     Open Project
                 </button>
-                <button class="delete-btn text-red-400 text-xs hover:text-red-300 flex items-center gap-1 mt-2">
+                <button class="delete-btn text-red-500 text-xs hover:text-red-400 font-medium flex items-center gap-1 mt-2">
                     <i class="ri-delete-bin-line"></i> Delete
                 </button>
             </div>
@@ -111,7 +108,7 @@ const renderCard = (project) => {
         const input = document.createElement('input');
         input.type = 'text';
         input.value = currentTitle;
-        input.className = "w-full bg-slate-900 text-white border border-flux-500 rounded px-2 py-1 text-sm focus:outline-none z-30 relative";
+        input.className = "w-full bg-bg-main text-text-primary border border-accent rounded px-2 py-1 text-sm focus:outline-none z-30 relative";
 
         // Hide title and button, show input
         titleEl.style.display = 'none';
@@ -150,7 +147,14 @@ const renderCard = (project) => {
     // Delete handler
     div.querySelector('.delete-btn').addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (confirm('Are you sure you want to delete this project?')) {
+        const confirmed = await window.fluxModal.confirm(
+            "Delete Project?",
+            "Are you sure you want to remove this project from your Vault? This action cannot be undone.",
+            "Delete",
+            true // Danger mode
+        );
+
+        if (confirmed) {
             // Visual exit
             div.style.opacity = '0';
             div.style.transform = 'scale(0.9)';
@@ -191,15 +195,15 @@ export default {
                 </div>
 
                 <!-- Empty State (hidden by default) -->
-                <div id="empty-state" class="hidden empty-state flex-col items-center justify-center py-32 text-center rounded-3xl border border-dashed border-white/10 bg-white/5">
+                <div id="empty-state" class="hidden empty-state flex-col items-center justify-center py-32 text-center rounded-3xl border border-dashed border-border-light bg-bg-sidebar">
                     <div class="relative w-32 h-32 mb-8">
-                        <div class="absolute inset-0 bg-violet-500/20 rounded-full blur-2xl animate-pulse"></div>
-                        <i class="ri-rocket-2-line text-8xl text-violet-500/40 relative z-10"></i>
+                        <div class="absolute inset-0 bg-accent/20 rounded-full blur-2xl animate-pulse"></div>
+                        <i class="ri-rocket-2-line text-8xl text-accent relative z-10 opacity-40"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-3">Launch Your First Project</h3>
-                    <p class="text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">Transform your vision into reality. Start by creating a new project and let Flux guide you through the entire development journey.</p>
+                    <h3 class="text-2xl font-serif font-bold text-text-primary mb-3">Launch Your First Project</h3>
+                    <p class="text-text-secondary mb-8 max-w-md mx-auto leading-relaxed">Transform your vision into reality. Start by creating a new project and let Flux guide you through the entire development journey.</p>
                     
-                    <button id="empty-new-btn" class="px-8 py-3 rounded-lg bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white transition-all text-sm font-semibold shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 hover:scale-105">
+                    <button id="empty-new-btn" class="btn-primary">
                         <i class="ri-add-line mr-2"></i>Create New Project
                     </button>
                 </div>

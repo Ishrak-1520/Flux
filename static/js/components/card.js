@@ -68,7 +68,14 @@ export default {
         // Delete handler
         div.querySelector('.delete-btn').addEventListener('click', async (e) => {
             e.stopPropagation();
-            if (confirm('Are you sure you want to delete this project?')) {
+            const confirmed = await window.fluxModal.confirm(
+                "Delete Project?",
+                "Are you sure you want to remove this project from your Vault? This action cannot be undone.",
+                "Delete",
+                true // Danger mode
+            );
+
+            if (confirmed) {
                 div.style.opacity = '0';
                 div.style.transform = 'scale(0.9)';
                 setTimeout(() => {

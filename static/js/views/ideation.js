@@ -20,80 +20,75 @@ export default {
         }
 
         container.innerHTML = `
-            <div class="max-w-5xl mx-auto px-4 py-8">
+            <div class="max-w-5xl mx-auto px-4 py-12 animate-fade-in">
                 <!-- Navigation -->
-                <nav class="mb-12 flex items-center text-sm font-mono text-gray-500">
-                    <a href="#/dashboard" class="hover:text-cyan-400 transition-colors flex items-center gap-1 group">
+                <nav class="mb-12 flex items-center text-xs font-mono text-text-muted uppercase tracking-widest font-bold">
+                    <a href="#/dashboard" class="hover:text-accent transition-colors flex items-center gap-2 group">
                         <i class="ri-arrow-left-line group-hover:-translate-x-1 transition-transform"></i>
-                        BACK_TO_VAULT
+                        Vlt_Return
                     </a>
-                    <span class="mx-3 text-gray-700">/</span>
-                    <span class="text-gray-300 truncate max-w-xs">${project.title}</span>
+                    <span class="mx-4 opacity-30">//</span>
+                    <span class="text-text-primary truncate max-w-xs font-serif italic normal-case tracking-normal text-base">${project.title}</span>
                 </nav>
 
                 <!-- Header -->
                 <div class="text-center mb-16 relative">
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-flux-500/10 rounded-full blur-3xl -z-10"></div>
-                    <h1 class="text-5xl md:text-6xl font-black text-white mb-6 tracking-tight">
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-200 to-flux-400">
-                            Manifest Your Vision
-                        </span>
+                    <h1 class="text-5xl md:text-7xl font-serif font-black text-text-primary mb-6 tracking-tight">
+                        Manifest Your Vision
                     </h1>
-                    <p class="text-xl text-gray-400 max-w-2xl mx-auto font-light">
+                    <p class="text-lg text-text-secondary max-w-2xl mx-auto font-light leading-relaxed">
                         Architect the future. Describe your objective or allow the system to guide your parameters.
                     </p>
                 </div>
 
                 <!-- Tabs -->
-                <div class="flex justify-center mb-10">
-                    <div class="glass-panel p-1.5 rounded-2xl flex relative z-10 w-full max-w-md bg-black/40 border-white/5">
-                        <button class="tab-btn w-1/2 py-3 rounded-xl text-sm font-bold transition-all duration-300 bg-white/10 text-white shadow-lg shadow-white/5" data-tab="freestyle">
-                            <i class="ri-edit-line mr-2"></i>FREESTYLE
+                <div class="flex justify-center mb-12">
+                    <div class="p-1.5 rounded-2xl flex relative z-10 w-full max-w-md bg-bg-sidebar border border-border-light shadow-sm">
+                        <button class="tab-btn w-1/2 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 bg-bg-card text-text-primary border border-border-light shadow-sm" data-tab="freestyle">
+                            <i class="ri-edit-line mr-2"></i>Freestyle
                         </button>
-                        <button class="tab-btn w-1/2 py-3 rounded-xl text-sm font-bold transition-all duration-300 text-gray-500 hover:text-white" data-tab="guided">
-                            <i class="ri-list-check-2 mr-2"></i>GUIDED
+                        <button class="tab-btn w-1/2 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 text-text-muted hover:text-text-primary" data-tab="guided">
+                            <i class="ri-list-check-2 mr-2"></i>Guided
                         </button>
                     </div>
                 </div>
 
                 <!-- Form Container -->
                 <div class="relative">
-                    <div class="absolute -inset-1 bg-gradient-to-r from-violet-600/20 to-cyan-500/20 rounded-3xl blur opacity-50"></div>
-                    <div class="glass-panel p-8 md:p-12 rounded-3xl relative overflow-hidden bg-slate-950/80">
+                    <div class="bg-bg-card p-10 md:p-14 rounded-3xl relative overflow-hidden border border-border-light shadow-2xl">
                         
                         <form id="ideation-form" class="relative z-10 max-w-3xl mx-auto">
                             <!-- Freestyle View -->
                             <div id="tab-freestyle" class="tab-content transition-all duration-500">
-                                <label class="block text-xs font-mono text-cyan-400 mb-3 uppercase tracking-widest">
+                                <label class="block text-[10px] font-mono text-accent mb-4 uppercase tracking-widest font-bold">
                                     // Project_Directive
                                 </label>
                                 <div class="relative group">
-                                    <div class="absolute -inset-0.5 bg-gradient-to-r from-flux-500 to-cyan-500 rounded-2xl opacity-0 group-focus-within:opacity-50 transition duration-500 blur"></div>
                                     <textarea 
                                         name="prompt" 
-                                        class="relative w-full h-64 p-6 rounded-2xl bg-slate-900 border border-white/10 text-gray-100 placeholder-gray-600 focus:outline-none focus:ring-0 resize-none font-mono text-sm leading-relaxed transition-all shadow-inner"
+                                        class="relative w-full h-80 p-8 rounded-2xl bg-bg-sidebar border border-border-light text-text-primary placeholder-text-muted focus:outline-none focus:border-accent resize-none font-mono text-sm leading-relaxed transition-all shadow-inner"
                                         placeholder="> Initiate system prompt...&#10;> Describe the application architecture, target user base, and core functionality..."
                                     >${project.original_prompt || ''}</textarea>
                                 </div>
-                                <div class="mt-3 flex justify-between items-center text-xs font-mono text-gray-600">
-                                    <span>MD_SUPPORTED</span>
-                                    <span><span id="char-count" class="text-cyan-500">0</span> CHARS</span>
+                                <div class="mt-4 flex justify-between items-center text-[10px] font-mono text-text-muted uppercase tracking-widest font-bold">
+                                    <span>MD_Syntax_Active</span>
+                                    <span><span id="char-count" class="text-accent">0</span>_Characters</span>
                                 </div>
                             </div>
 
                             <!-- Guided View -->
-                            <div id="tab-guided" class="tab-content hidden transition-all duration-500 space-y-8">
+                            <div id="tab-guided" class="tab-content hidden transition-all duration-500 space-y-10">
                                 <div>
-                                    <label class="block text-xs font-mono text-cyan-400 mb-4 uppercase tracking-widest">
+                                    <label class="block text-[10px] font-mono text-accent mb-6 uppercase tracking-widest font-bold">
                                         // Domain_Selector
                                     </label>
                                     <input type="hidden" name="category" id="category-input">
-                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="category-pills">
+                                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4" id="category-pills">
                                         <!-- Pills generated here -->
                                         ${['SWE Tools', 'FinTech', 'HealthTech', 'EdTech', 'CyberSec', 'Social', 'Marketplace', 'IoT', 'AI/ML'].map(cat => `
-                                            <button type="button" class="category-pill py-3 px-4 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:border-white/20 hover:text-white transition-all text-sm font-medium text-left flex items-center justify-between group" data-value="${cat}">
+                                            <button type="button" class="category-pill py-4 px-5 rounded-xl border border-border-light bg-bg-sidebar text-text-muted hover:bg-bg-card hover:border-accent hover:text-text-primary transition-all text-xs font-bold uppercase tracking-widest text-left flex items-center justify-between group" data-value="${cat}">
                                                 <span>${cat}</span>
-                                                <div class="w-2 h-2 rounded-full bg-transparent border border-gray-600 group-hover:border-cyan-400 pill-indicator"></div>
+                                                <div class="w-2.5 h-2.5 rounded-full border border-border-light group-hover:border-accent pill-indicator"></div>
                                             </button>
                                         `).join('')}
                                     </div>
@@ -101,39 +96,30 @@ export default {
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div>
-                                        <label class="block text-xs font-mono text-gray-500 mb-3 uppercase">Subdomain Context</label>
-                                        <div class="relative group">
-                                            <div class="absolute -inset-0.5 bg-flux-500 rounded-xl opacity-0 group-focus-within:opacity-30 transition blur"></div>
-                                            <input type="text" name="subdomain" class="relative w-full p-4 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-flux-500 transition-colors" placeholder="e.g., Predictive Maintenance">
-                                        </div>
+                                        <label class="block text-[10px] font-mono text-text-muted mb-3 uppercase font-bold tracking-widest">Subdomain Context</label>
+                                        <input type="text" name="subdomain" class="w-full p-4 rounded-xl bg-bg-sidebar border border-border-light text-text-primary focus:outline-none focus:border-accent transition-colors" placeholder="e.g., Predictive Maintenance">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-mono text-gray-500 mb-3 uppercase">Target Audience</label>
-                                        <div class="relative group">
-                                            <div class="absolute -inset-0.5 bg-flux-500 rounded-xl opacity-0 group-focus-within:opacity-30 transition blur"></div>
-                                            <input type="text" name="audience" class="relative w-full p-4 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-flux-500 transition-colors" placeholder="e.g., Enterprise Admins">
-                                        </div>
+                                        <label class="block text-[10px] font-mono text-text-muted mb-3 uppercase font-bold tracking-widest">Target Audience</label>
+                                        <input type="text" name="audience" class="w-full p-4 rounded-xl bg-bg-sidebar border border-border-light text-text-primary focus:outline-none focus:border-accent transition-colors" placeholder="e.g., Enterprise Admins">
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label class="block text-xs font-mono text-gray-500 mb-3 uppercase">Specific Constraints</label>
-                                    <textarea name="extra_context" class="w-full h-32 p-4 rounded-xl bg-slate-900 border border-white/10 text-gray-300 focus:border-flux-500 focus:outline-none resize-none text-sm placeholder-gray-700"></textarea>
+                                    <label class="block text-[10px] font-mono text-text-muted mb-3 uppercase font-bold tracking-widest">Specific Constraints</label>
+                                    <textarea name="extra_context" class="w-full h-32 p-4 rounded-xl bg-bg-sidebar border border-border-light text-text-primary focus:border-accent focus:outline-none resize-none text-xs placeholder-text-muted"></textarea>
                                 </div>
                             </div>
 
                             <!-- Action Bar -->
-                            <div class="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
-                                <div class="flex items-center gap-2 text-xs text-gray-500 font-mono">
-                                    <i class="ri-cpu-line text-flux-500 animate-pulse"></i>
-                                    <span>SYSTEM_READY :: WAITING_FOR_INPUT</span>
+                            <div class="mt-14 pt-10 border-t border-border-light flex flex-col md:flex-row justify-between items-center gap-8">
+                                <div class="flex items-center gap-3 text-[10px] text-text-muted font-mono uppercase tracking-widest font-bold">
+                                    <i class="ri-cpu-line text-accent animate-pulse"></i>
+                                    <span>System_Status :: Listening_for_Directives</span>
                                 </div>
-                                <button type="submit" class="w-full md:w-auto group relative px-8 py-4 bg-white text-black font-bold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:scale-105 transition-all duration-300 overflow-hidden">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-violet-200 to-cyan-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                    <span class="relative z-10 flex items-center justify-center gap-3">
-                                        INITIALIZE_RESEARCH
-                                        <i class="ri-arrow-right-line group-hover:translate-x-1 transition-transform"></i>
-                                    </span>
+                                <button type="submit" class="btn-primary px-12 py-5 text-sm">
+                                    Initialize_Analysis
+                                    <i class="ri-arrow-right-line ml-2"></i>
                                 </button>
                             </div>
                         </form>
@@ -154,11 +140,11 @@ export default {
 
                 // Update UI visually
                 tabs.forEach(t => {
-                    t.classList.remove('bg-white/10', 'text-white', 'shadow-lg');
-                    t.classList.add('text-gray-500', 'hover:text-white');
+                    t.classList.remove('bg-bg-card', 'text-text-primary', 'shadow-sm', 'border-border-light');
+                    t.classList.add('text-text-muted');
                 });
-                btn.classList.add('bg-white/10', 'text-white', 'shadow-lg');
-                btn.classList.remove('text-gray-500', 'hover:text-white');
+                btn.classList.add('bg-bg-card', 'text-text-primary', 'shadow-sm', 'border-border-light');
+                btn.classList.remove('text-text-muted');
 
                 // Toggle content
                 contents.forEach(c => {
@@ -184,17 +170,17 @@ export default {
             pill.addEventListener('click', () => {
                 // Deselect all
                 pills.forEach(p => {
-                    p.classList.remove('border-flux-500', 'bg-flux-500/10', 'text-white');
-                    p.classList.add('border-white/10', 'bg-white/5', 'text-gray-400');
-                    p.querySelector('.pill-indicator').classList.remove('bg-cyan-400', 'border-transparent');
-                    p.querySelector('.pill-indicator').classList.add('bg-transparent');
+                    p.classList.remove('border-accent', 'bg-accent/10', 'text-text-primary');
+                    p.classList.add('border-border-light', 'bg-bg-sidebar', 'text-text-muted');
+                    p.querySelector('.pill-indicator').classList.remove('bg-accent', 'border-transparent');
+                    p.querySelector('.pill-indicator').classList.add('bg-transparent', 'border-border-light');
                 });
 
                 // Select clicked
-                pill.classList.remove('border-white/10', 'bg-white/5', 'text-gray-400');
-                pill.classList.add('border-flux-500', 'bg-flux-500/10', 'text-white');
-                pill.querySelector('.pill-indicator').classList.remove('bg-transparent');
-                pill.querySelector('.pill-indicator').classList.add('bg-cyan-400', 'border-transparent');
+                pill.classList.remove('border-border-light', 'bg-bg-sidebar', 'text-text-muted');
+                pill.classList.add('border-accent', 'bg-accent/10', 'text-text-primary');
+                pill.querySelector('.pill-indicator').classList.remove('bg-transparent', 'border-border-light');
+                pill.querySelector('.pill-indicator').classList.add('bg-accent', 'border-transparent');
 
                 // Update input
                 categoryInput.value = pill.dataset.value;
@@ -233,7 +219,7 @@ export default {
 
             const btn = form.querySelector('button[type="submit"]');
             const originalBtnContent = btn.innerHTML;
-            btn.innerHTML = `<i class="ri-loader-4-line animate-spin text-xl"></i> INITIALIZING...`;
+            btn.innerHTML = `<i class="ri-loader-4-line animate-spin text-xl"></i> Initializing_Genesis...`;
             btn.disabled = true;
 
             try {
