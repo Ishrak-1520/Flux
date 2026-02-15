@@ -405,6 +405,34 @@ async def refine_endpoint(req: RefineRequest, user_id: int = Depends(auth.get_cu
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ─── Export Routes ───────────────────────────────────────────
+
+class BibliographyRequest(BaseModel):
+    resources: list
+
+@app.post("/api/export/bibliography")
+async def export_bibliography(req: BibliographyRequest):
+    """
+    Generate a PDF bibliography from accumulated learning resources.
+    """
+    try:
+        from .export_manager import generate_bibliography_pdf
+        from fastapi.responses import Response
+        
+        pdf_bytes = generate_bibliography_pdf(req.resources)
+        
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": "attachment; filename=flux_bibliography.pdf"
+            }
+        )
+    except Exception as e:
+        print(f"Bibliography Export Error: {e}")
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
+
+
 @app.exception_handler(404)
 async def spa_fallback(request: Request, exc: Exception):
     # If the request is for an API route, return 404

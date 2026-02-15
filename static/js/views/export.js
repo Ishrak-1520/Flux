@@ -23,6 +23,10 @@ export default {
         const docs = project.docs || [];
         const getDocContent = (type) => docs.find(d => d.doc_type === type)?.content || '';
 
+        // Load resources for the bibliography card
+        const resources = FluxStorage.load('project_bibliography') || [];
+        const hasResources = resources.length > 0;
+
         container.innerHTML = `
             <div class="max-w-4xl mx-auto py-12 animate-fade-in">
                 <div class="mb-12 text-center">
@@ -35,6 +39,7 @@ export default {
                     ${renderAssetCard('Software Requirements (SRS)', 'srs', 'ri-file-code-line', 'markdown', getDocContent('srs'))}
                     ${renderAssetCard('Cursor Rules (.json)', 'cursorrules', 'ri-code-s-slash-line', 'json', getDocContent('cursorrules'))}
                     ${renderAssetCard('Implementation Roadmap', 'roadmap', 'ri-map-2-line', 'markdown', getDocContent('roadmap'))}
+                    ${renderAssetCard('Learning Bibliography', 'bibliography', 'ri-book-2-line', 'pdf', hasResources ? 'ready' : '')}
                 </div>
 
                 <div class="mt-16 text-center">
@@ -78,9 +83,50 @@ export default {
 
         // Download Handler
         container.querySelectorAll('.download-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', async () => {
                 const type = btn.dataset.type;
                 const filename = btn.dataset.filename;
+
+                // Handle bibliography PDF export
+                if (type === 'bibliography') {
+                    const resources = FluxStorage.load('project_bibliography');
+
+                    if (!resources || resources.length === 0) {
+                        app.toast("No resources found! Please go back to Research/Planning and generate some content first.", "error");
+                        return;
+                    }
+
+                    // Show loading state
+                    const originalHTML = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="ri-loader-4-line animate-spin text-xl"></i>';
+
+                    try {
+                        const response = await fetch('/api/export/bibliography', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ resources: resources })
+                        });
+
+                        if (!response.ok) {
+                            const err = await response.json();
+                            throw new Error(err.detail || "Server Error");
+                        }
+
+                        const blob = await response.blob();
+                        downloadBlob("Flux_Bibliography.pdf", blob);
+                        app.toast("Bibliography exported successfully", "success");
+                    } catch (error) {
+                        console.error("Export failed:", error);
+                        app.toast("Failed to generate PDF: " + error.message, "error");
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHTML;
+                    }
+                    return;
+                }
+
+                // Handle regular file downloads
                 const content = getDocContent(type);
 
                 if (content) {
@@ -92,6 +138,17 @@ export default {
 
         function downloadFile(filename, content) {
             const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        function downloadBlob(filename, blob) {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;

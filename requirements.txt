@@ -8,3 +8,4 @@ bcrypt==4.2.1
 sse-starlette==2.2.1
 cryptography==44.0.0
 ddgs
+fpdf2==2.8.2

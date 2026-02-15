@@ -6,6 +6,7 @@
 import { API } from '../api.js';
 import app from '../app.js';
 import { marked } from '../vendor/marked.js';
+import { renderResourceList, parseResponseWithResources } from '../components/resource_card.js';
 
 export default {
     async mount(container, params) {
@@ -242,7 +243,32 @@ export default {
                         }
                     } else if (data.type === 'content') {
                         fullMarkdown += data.content;
-                        reportContent.innerHTML = marked.parse(fullMarkdown);
+                        // 1. PARSE using the new robust parser
+                        const { markdown, resources } = window.FluxParser.parse(fullMarkdown);
+
+                        // 2. RENDER MARKDOWN (Clean text only)
+                        reportContent.innerHTML = marked.parse(markdown);
+
+                        // 3. SAVE & RENDER RESOURCES (Critical for PDF Export)
+                        if (resources && resources.length > 0) {
+                            console.log("FluxParser: Found resources:", resources);
+
+                            // Load existing, merge, and save back using FluxStorage
+                            const currentBiblio = FluxStorage.load('project_bibliography') || [];
+
+                            // Merge preventing duplicates (by URL)
+                            const updatedBiblio = [...currentBiblio];
+                            resources.forEach(newRes => {
+                                if (!updatedBiblio.some(existing => existing.url === newRes.url)) {
+                                    updatedBiblio.push(newRes);
+                                }
+                            });
+
+                            FluxStorage.save('project_bibliography', updatedBiblio);
+
+                            // Render Cards Component
+                            reportContent.innerHTML += renderResourceList(resources);
+                        }
                     } else if (data.type === 'phase') {
                         if (data.content === 'analysis') {
                             statusBadge.className = "px-6 py-3 rounded-xl bg-bg-sidebar text-accent border border-accent/20 flex items-center gap-3 font-mono text-xs uppercase tracking-widest";
@@ -260,16 +286,19 @@ export default {
                             currentBlueprints = list;
                             renderBlueprintsJSON(list);
 
-                            // Save complete state to LocalStorage (both analysis and blueprints)
+                            // Save complete state to LocalStorage
+                            const { markdown, resources } = window.FluxParser.parse(fullMarkdown);
+
                             const cacheData = {
                                 query: project.title || 'Research',
-                                analysis: fullMarkdown,
+                                analysis: markdown,
                                 blueprints: list,
+                                resources: resources,
                                 timestamp: Date.now()
                             };
-                            localStorage.setItem('flux_research_cache', JSON.stringify(cacheData));
+                            FluxStorage.save('research_cache', cacheData);
                             // Keep old key for backwards compatibility
-                            localStorage.setItem('flux_research_data', JSON.stringify(list));
+                            FluxStorage.save('research_data', list);
                         } catch (e) {
                             console.error("Blueprint Parse Error", e);
                         }
@@ -292,15 +321,23 @@ export default {
         };
 
         // Initial Start - Check for cached state
-        const cachedState = localStorage.getItem('flux_research_cache');
-        if (cachedState) {
+        const cached = FluxStorage.load('research_cache');
+        if (cached) {
             try {
-                const cached = JSON.parse(cachedState);
 
                 // Restore analysis content
                 if (cached.analysis) {
                     fullMarkdown = cached.analysis;
                     reportContent.innerHTML = marked.parse(cached.analysis);
+
+                    // Restore resources if they exist
+                    if (cached.resources && cached.resources.length > 0) {
+                        // Re-accumulate in global store
+                        if (!window.fluxResources) window.fluxResources = [];
+                        window.fluxResources.push(...cached.resources);
+                        // Render resource cards
+                        reportContent.innerHTML += renderResourceList(cached.resources);
+                    }
                 }
 
                 // Restore blueprints
@@ -318,25 +355,24 @@ export default {
 
             } catch (e) {
                 console.error("Failed to restore cached state", e);
-                localStorage.removeItem('flux_research_cache');
-                localStorage.removeItem('flux_research_data');
+                FluxStorage.clear('research_cache');
+                FluxStorage.clear('research_data');
                 startAnalysis();
             }
         } else {
             // Fallback to old cache format for backwards compatibility
-            const savedBlueprints = localStorage.getItem('flux_research_data');
+            const savedBlueprints = FluxStorage.load('research_data');
             if (savedBlueprints) {
                 try {
-                    const results = JSON.parse(savedBlueprints);
-                    currentBlueprints = results;
+                    currentBlueprints = savedBlueprints;
                     blueprintsContainer.innerHTML = '';
-                    renderBlueprintsJSON(results);
+                    renderBlueprintsJSON(savedBlueprints);
 
                     statusBadge.className = "px-6 py-3 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-3 font-mono text-xs uppercase tracking-widest";
                     statusBadge.innerHTML = `<i class="ri-check-double-line"></i><span>Restored_From_Cache</span>`;
                 } catch (e) {
                     console.error("Failed to parse saved blueprints", e);
-                    localStorage.removeItem('flux_research_data');
+                    FluxStorage.clear('research_data');
                     startAnalysis();
                 }
             } else {
@@ -354,8 +390,8 @@ export default {
 
             if (confirmed) {
                 // Clear both cache formats
-                localStorage.removeItem('flux_research_cache');
-                localStorage.removeItem('flux_research_data');
+                FluxStorage.clear('research_cache');
+                FluxStorage.clear('research_data');
                 fullMarkdown = '';
                 currentBlueprints = [];
                 startAnalysis();
@@ -417,7 +453,7 @@ export default {
             currentBlueprints.push(customBP);
             const newIndex = currentBlueprints.length - 1;
 
-            localStorage.setItem(`project_${projectId}_custom_blueprint`, JSON.stringify(customBP));
+            FluxStorage.save('custom_blueprint', customBP);
 
             if (await window.fluxModal.confirm("Initialize Project?", `Initialize custom project "${title}" and proceed to planning?`)) {
                 try {

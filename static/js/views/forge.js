@@ -16,10 +16,9 @@ export default {
         let activeContext = "Full Stack App"; // Default
 
         // Check for Blueprint Bridge
-        const pendingBlueprint = localStorage.getItem('forge_blueprint');
-        if (pendingBlueprint) {
+        const blueprint = FluxStorage.load('forge_blueprint');
+        if (blueprint) {
             try {
-                const blueprint = JSON.parse(pendingBlueprint);
                 activeContext = blueprint;
 
                 // We'll update the UI in renderHTML or here if possible, 
@@ -28,16 +27,15 @@ export default {
             } catch (e) {
                 console.error("Blueprint parse error", e);
             }
-            localStorage.removeItem('forge_blueprint');
+            FluxStorage.clear('forge_blueprint');
         }
 
         // Check for Existing Scaffold
-        const savedScaffold = localStorage.getItem('flux_scaffold_status');
-        if (savedScaffold) {
+        const data = FluxStorage.load('scaffold_status');
+        if (data) {
             try {
                 // Determine if we should show it (maybe just the download button?)
                 // For now, let's restore the full tree if we saved the data object
-                const data = JSON.parse(savedScaffold);
                 currentScaffold = data;
 
                 // Defer render until HTML is injected
@@ -87,7 +85,7 @@ export default {
                 currentScaffold = data;
 
                 // Save Status
-                localStorage.setItem('flux_scaffold_status', JSON.stringify(data));
+                FluxStorage.save('scaffold_status', data);
 
                 window.renderForgeTree(data); // Call helper
 

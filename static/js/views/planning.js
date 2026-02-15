@@ -6,6 +6,7 @@
 import { API } from '../api.js';
 import app from '../app.js';
 import { marked } from '../vendor/marked.js';
+import { renderResourceList, parseResponseWithResources } from '../components/resource_card.js';
 
 export default {
     async mount(container, params) {
@@ -301,9 +302,9 @@ export default {
         window.processMermaidDiagrams = processMermaidDiagrams;
 
         try {
-            const savedDocs = localStorage.getItem('flux_planning_docs');
+            const savedDocs = FluxStorage.load('planning_docs');
             if (savedDocs) {
-                localDocCache = JSON.parse(savedDocs);
+                docCache = savedDocs;
                 // Merge with default cache if needed, though simple assignment works here
                 app.toast('Restored previous plan', 'success');
             }
@@ -344,71 +345,91 @@ export default {
         }
 
 
-        // --- Start of Task 3 Rename Logic ---
-        titleHeader.addEventListener('click', () => {
+        /**
+         * Safely retrieves the current project name, even during editing
+         */
+        function getSafeProjectName() {
+            // 1. Check if user is currently typing (Edit Mode)
+            const inputField = titleHeader.querySelector('#rename-input');
+            if (inputField) {
+                return inputField.value.trim() || project.title || "New Project";
+            }
+
+            // 2. Check if in normal View Mode
             const h2 = titleHeader.querySelector('h2');
-            const currentTitle = h2.textContent;
+            if (h2) {
+                return h2.textContent.trim();
+            }
 
-            // Swap to input
+            // 3. Fallback to project state
+            return project.title || "New Project";
+        }
+
+        // --- Start of Task 3 Rename Logic (Robust Version) ---
+        const renderTitleHeader = () => {
             titleHeader.innerHTML = `
-            < input type = "text" id = "rename-input" class="w-full bg-slate-900 text-white border border-flux-500 rounded px-2 py-1 text-sm focus:outline-none" value = "${currentTitle}" >
-                `;
-            const input = titleHeader.querySelector('input');
-            input.focus();
+                <h2 class="text-sm font-bold text-text-primary truncate pr-2 hover:text-accent transition-colors" title="Click to rename">${project.title}</h2>
+                <i class="ri-edit-2-line text-text-muted opacity-0 group-hover:opacity-100 transition-opacity"></i>
+            `;
+        };
 
-            const saveTitle = async () => {
-                const newTitle = input.value.trim();
-                if (newTitle && newTitle !== currentTitle) {
-                    try {
-                        await API.updateProjectTitle(projectId, newTitle);
-                        app.toast('Project renamed', 'success');
-                        // Restore UI with new title
-                        titleHeader.innerHTML = `
-                < h2 class="text-sm font-bold text-white truncate pr-2 hover:text-cyan-400 transition-colors" title = "Click to rename" > ${newTitle}</h2 >
-                    <i class="ri-edit-2-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-        `;
-                    } catch (err) {
-                        app.toast(err.message, 'error');
-                        // Revert
-                        titleHeader.innerHTML = `
-            < h2 class="text-sm font-bold text-white truncate pr-2 hover:text-cyan-400 transition-colors" title = "Click to rename" > ${currentTitle}</h2 >
-                <i class="ri-edit-2-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-        `;
-                    }
-                } else {
-                    // Revert
-                    titleHeader.innerHTML = `
-            < h2 class="text-sm font-bold text-white truncate pr-2 hover:text-cyan-400 transition-colors" title = "Click to rename" > ${currentTitle}</h2 >
-                <i class="ri-edit-2-line text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-        `;
-                }
-                // re-attach listener (since we replaced innerHTML)
-                // Actually this pattern of replacing innerHTML disconnects the listener on `titleHeader` if we aren't careful.
-                // titleHeader is the container. Listeners are valid? No, `innerHTML` wipes children but not the container itself.
-                // So the container listener might fire again? 
-                // Wait, clicking input triggers container click? Yes.
-                // We need to stop propagation on the input click.
-                const newInput = titleHeader.querySelector('input');
-                if (newInput) {
-                    // Prevent click on input from triggering the "switch to edit" again
-                    newInput.addEventListener('click', (e) => e.stopPropagation());
-                    newInput.addEventListener('blur', saveTitle);
-                    newInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            newInput.blur();
-                        }
+        const saveNewTitle = async (newTitle) => {
+            newTitle = newTitle.trim();
+            if (!newTitle || newTitle === project.title) {
+                renderTitleHeader();
+                return;
+            }
+
+            try {
+                await API.updateProjectTitle(projectId, newTitle);
+                project.title = newTitle;
+                app.toast('Project renamed', 'success');
+            } catch (err) {
+                app.toast(err.message, 'error');
+            }
+            renderTitleHeader();
+        };
+
+        titleHeader.addEventListener('click', (e) => {
+            // 1. Prevent bubbling
+            e.stopPropagation();
+
+            // 2. Guard: If already renaming, don't re-initialize
+            if (titleHeader.querySelector('#rename-input')) return;
+
+            const currentTitle = project.title || "New Project";
+
+            // 3. Swap to input
+            titleHeader.innerHTML = `
+                <input 
+                    type="text" 
+                    id="rename-input" 
+                    class="w-full bg-bg-sidebar text-text-primary border border-accent rounded px-2 py-1 text-sm focus:outline-none focus:border-accent shadow-glow-sm" 
+                    value="${currentTitle}"
+                >
+            `;
+
+            // 4. Safe Focus (Wait for DOM update)
+            requestAnimationFrame(() => {
+                const input = titleHeader.querySelector('input');
+                if (input) {
+                    input.focus();
+                    input.select();
+
+                    // Attach handlers here for fresh input
+                    input.addEventListener('blur', () => saveNewTitle(input.value));
+                    input.addEventListener('keypress', (ev) => {
+                        if (ev.key === 'Enter') input.blur();
                     });
-                }
-            };
-
-            input.addEventListener('click', (e) => e.stopPropagation());
-            input.addEventListener('blur', saveTitle);
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    input.blur();
+                    input.addEventListener('click', (ev) => ev.stopPropagation());
                 }
             });
         });
+
+        function shouldSkipRender() {
+            return titleHeader.querySelector('#rename-input') !== null;
+        }
+        // --- End of Rename Logic ---
         // --- End of Task 3 Rename Logic ---
 
 
@@ -424,7 +445,7 @@ export default {
                 }
 
                 console.log("🚀 Bridging to Forge...", window.currentBlueprints);
-                localStorage.setItem('forge_blueprint', JSON.stringify(window.currentBlueprints));
+                FluxStorage.save('forge_blueprint', window.currentBlueprints);
                 window.location.hash = `#/project/${projectId}/forge`;
             });
         }
@@ -645,6 +666,10 @@ export default {
         });
 
         function renderContent(content, type) {
+            if (shouldSkipRender()) {
+                console.log("⚠️ Skipping render during rename to prevent focus loss");
+                return;
+            }
             if (type === 'cursorrules') {
                 docContent.innerHTML = `<pre class="font-mono text-xs text-green-400 bg-black/40 p-4 rounded-lg border border-white/5 overflow-x-auto">${content}</pre>`;
             } else if (type === 'roadmap' && viewMode === 'kanban') {
@@ -652,7 +677,23 @@ export default {
                 const phases = parseRoadmapToKanban(content);
                 docContent.innerHTML = renderKanbanBoard(phases);
             } else {
-                docContent.innerHTML = marked.parse(content);
+                const { markdown, resources } = window.FluxParser.parse(content);
+                docContent.innerHTML = marked.parse(markdown);
+
+                if (resources && resources.length > 0) {
+                    // Save & Merge
+                    const currentBiblio = FluxStorage.load('project_bibliography') || [];
+                    const updatedBiblio = [...currentBiblio];
+                    resources.forEach(newRes => {
+                        if (!updatedBiblio.some(existing => existing.url === newRes.url)) {
+                            updatedBiblio.push(newRes);
+                        }
+                    });
+                    FluxStorage.save('project_bibliography', updatedBiblio);
+
+                    // Render Cards
+                    docContent.innerHTML += renderResourceList(resources);
+                }
 
                 // Style tables and lists
                 docContent.querySelectorAll('table').forEach(t => t.classList.add('w-full', 'border-collapse', 'my-4', 'text-sm'));
@@ -679,11 +720,25 @@ export default {
                 (data) => {
                     if (data.type === 'content') {
                         content += data.content;
+                        const { markdown, resources } = window.FluxParser.parse(content);
+
                         if (renderMarkdown) {
-                            // Re-parse with the new renderer
-                            targetEl.innerHTML = marked.parse(content);
+                            targetEl.innerHTML = marked.parse(markdown);
+                            if (resources && resources.length > 0) {
+                                // Sync resources to storage
+                                const currentBiblio = FluxStorage.load('project_bibliography') || [];
+                                const updatedBiblio = [...currentBiblio];
+                                resources.forEach(newRes => {
+                                    if (!updatedBiblio.some(existing => existing.url === newRes.url)) {
+                                        updatedBiblio.push(newRes);
+                                    }
+                                });
+                                FluxStorage.save('project_bibliography', updatedBiblio);
+
+                                targetEl.innerHTML += renderResourceList(resources);
+                            }
                         } else {
-                            targetEl.textContent = content;
+                            targetEl.textContent = markdown;
                         }
                     }
                 },
@@ -691,7 +746,7 @@ export default {
                     docCache[docType] = content;
 
                     // Save to LocalStorage
-                    localStorage.setItem('flux_planning_docs', JSON.stringify(docCache));
+                    FluxStorage.save('planning_docs', docCache);
 
                     renderContent(content, docType);
 

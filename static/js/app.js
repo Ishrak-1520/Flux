@@ -45,6 +45,15 @@ const app = {
      * Initialize Application
      */
     async init() {
+        // ONE-TIME CLEANUP: Remove legacy global keys
+        // This ensures users don't see old project data in new projects
+        ['flux_research_data', 'flux_research_cache', 'flux_planning_docs', 'flux_scaffold_status', 'forge_blueprint'].forEach(key => {
+            if (localStorage.getItem(key)) {
+                console.log(`Cleaning up legacy key: ${key}`);
+                localStorage.removeItem(key);
+            }
+        });
+
         this.applyTheme();
 
         // check auth

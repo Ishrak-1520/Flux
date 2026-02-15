@@ -99,3 +99,13 @@ class BlueprintAssistRequest(BaseModel):
 
 class TechStackSuggestRequest(BaseModel):
     vision: str
+# ─── Export ──────────────────────────────────────────────────
+
+class ResourceItem(BaseModel):
+    type: str
+    title: str
+    url: str
+    reason: str
+
+class BiblioRequest(BaseModel):
+    resources: List[ResourceItem]

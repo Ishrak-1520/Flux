@@ -21,12 +21,47 @@ MODEL_CHAT = "LongCat-Flash-Chat"
 
 # ─── CITATION & FORMATTING PROTOCOLS ─────────────────────────
 
-CITATION_PROTOCOL = """
-## References & Learning Sources
-To help you learn more, you MUST include this section at the end of the Improvement Ideas.
-1. **User Goal**: Explain what we understood from your prompt.
-2. **Real-World Examples**: Give 2-3 examples of companies or tools that do something similar.
-   - Format: `* **[Company/Tool Name]**: [What they do and what we can learn from them]`
+LEARNING_RESOURCES_PROTOCOL = """
+## Learning Resources & Citations (MANDATORY)
+
+At the end of your response, you MUST append a structured JSON block containing 3-5 high-quality learning resources.
+These resources should help the user learn the concepts, technologies, or methodologies discussed in your response.
+
+**CRITICAL**: Use actual URLs from the "REAL-TIME MARKET DATA" section when available. If a URL is not available, provide a descriptive search term.
+
+Format (wrap in ```json ... ```):
+```json
+{
+  "resources": [
+    {
+      "type": "Article" | "Video" | "Documentation" | "Paper" | "Tutorial",
+      "title": "Resource title (be specific and descriptive)",
+      "url": "Full URL (extract from search results when possible, or use https://www.google.com/search?q=descriptive+search+term)",
+      "reason": "One sentence explaining why this specific resource helps the user learn this topic"
+    }
+  ]
+}
+```
+
+EXAMPLE:
+```json
+{
+  "resources": [
+    {
+      "type": "Documentation",
+      "title": "React Official Documentation - Getting Started",
+      "url": "https://react.dev/learn",
+      "reason": "Official guide to React fundamentals, perfect for beginners building their first component-based UI"
+    },
+    {
+      "type": "Video",
+      "title": "Firebase Authentication Tutorial",
+      "url": "https://www.youtube.com/watch?v=example",
+      "reason": "Step-by-step video showing how to implement user login with Firebase, which is beginner-friendly"
+    }
+  ]
+}
+```
 """
 
 STYLE_GUIDE = """
@@ -61,8 +96,9 @@ CRITICAL SYNTAX RULES (To prevent errors):
 
 FORMATTING_REMINDER = """
 CRITICAL STRUCTURAL RULES:
-1. The document MUST start with `## Improvement Ideas`.
-3. The `## References` section MUST come AFTER the Improvement Ideas.
+1. The main content MUST come first (Improvement Ideas, PRD sections, etc.).
+2. The Learning Resources JSON block MUST be at the very end, after all markdown content.
+3. DO NOT include the JSON block inside a markdown section - it should be standalone at the end.
 """
 
 # ─── SYSTEM PROMPTS ──────────────────────────────────────────
@@ -84,9 +120,9 @@ Your task is to provide some 'Improvement Ideas' by researching the web.
 PROCESS:
 1. **Explain the Topic**: Briefly explain the industry in simple terms.
 2. **Improvement Ideas**: Identify 3-5 ways the user could make their idea better or more unique.
-3. **References**: List some learning sources as defined in the protocol.
+3. **Learning Resources**: Provide structured JSON resources as defined in the protocol.
 
-{CITATION_PROTOCOL}
+{LEARNING_RESOURCES_PROTOCOL}
 
 {STYLE_GUIDE}
 
@@ -97,10 +133,10 @@ STRICT OUTPUT CONSTRAINTS:
 - Encouraging, helpful tone.
 """
 
-PRD_SYSTEM = f"{MENTOR_PERSONA} Write a detailed PRD (Product Plan) for a beginner. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} {STYLE_GUIDE}"
-SRS_SYSTEM = f"{MENTOR_PERSONA} Write a Technical Spec (Step-by-step logic) for a student. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} {STYLE_GUIDE}"
-ROADMAP_SYSTEM = f"{MENTOR_PERSONA} Write an Implementation Roadmap (A to-do list) for building this. {CITATION_PROTOCOL} {VISUAL_PROTOCOL} {STYLE_GUIDE}"
-CURSORRULES_SYSTEM = f"{MENTOR_PERSONA} Write a .cursorrules file to help an AI assistant code this project with the student. {CITATION_PROTOCOL} {STYLE_GUIDE}"
+PRD_SYSTEM = f"{MENTOR_PERSONA} Write a detailed PRD (Product Plan) for a beginner. {LEARNING_RESOURCES_PROTOCOL} {VISUAL_PROTOCOL} {STYLE_GUIDE}"
+SRS_SYSTEM = f"{MENTOR_PERSONA} Write a Technical Spec (Step-by-step logic) for a student. {LEARNING_RESOURCES_PROTOCOL} {VISUAL_PROTOCOL} {STYLE_GUIDE}"
+ROADMAP_SYSTEM = f"{MENTOR_PERSONA} Write an Implementation Roadmap (A to-do list) for building this. {LEARNING_RESOURCES_PROTOCOL} {VISUAL_PROTOCOL} {STYLE_GUIDE}"
+CURSORRULES_SYSTEM = f"{MENTOR_PERSONA} Write a .cursorrules file to help an AI assistant code this project with the student. {LEARNING_RESOURCES_PROTOCOL} {STYLE_GUIDE}"
 
 BLUEPRINT_GENERATOR_SYSTEM = f"""{MENTOR_PERSONA}
 Based on the analysis, suggest exactly 3 Project Blueprints (Starter Ideas).
